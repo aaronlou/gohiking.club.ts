@@ -8,7 +8,7 @@ import { loginSchema } from "@/lib/validation";
 import { safeNextPath } from "@/lib/utils";
 import { ArrowRight, EyeIcon, EyeOffIcon, SpinnerIcon } from "./auth-icons";
 
-export function LoginForm({ next }: { next: string }) {
+export function LoginForm({ next, showDemo }: { next: string; showDemo: boolean }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -111,15 +111,17 @@ export function LoginForm({ next }: { next: string }) {
         )}
       </button>
 
-      <div className="demo-account">
-        <div>
-          <span className="mono">DEMO MEMBER / 演示成员</span>
-          <p>hiker@gohiking.club · trailhead2026</p>
+      {showDemo && (
+        <div className="demo-account">
+          <div>
+            <span className="mono">DEMO MEMBER / 演示成员</span>
+            <p>hiker@gohiking.club · trailhead2026</p>
+          </div>
+          <button type="button" onClick={useDemo}>
+            填入
+          </button>
         </div>
-        <button type="button" onClick={useDemo}>
-          填入
-        </button>
-      </div>
+      )}
 
       <p className="auth-switch">
         还没有档案？{" "}

@@ -65,6 +65,14 @@ export function SiteFooter() {
         <span>© 2026 山行档案</span>
         <span>BUILT FOR THE LONG WAY</span>
         <span>成都 · 温哥华 · 山野</span>
+        <a
+          className="site-footer__icp"
+          href="https://beian.miit.gov.cn/"
+          target="_blank"
+          rel="noreferrer noopener"
+        >
+          浙ICP备2024126456号-4
+        </a>
       </div>
     </footer>
   );

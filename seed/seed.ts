@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { eq } from "drizzle-orm";
@@ -9,17 +10,20 @@ import { deletePhotoDirectory } from "../src/server/media/storage";
 import { DEMO_PASSWORD, seedPhotos, seedUsers } from "./data";
 
 const assetRoot = path.join(process.cwd(), "seed", "assets");
+const randomPasswords = process.env.SEED_RANDOM_PASSWORDS === "true";
 
 async function ensureUser(seedUser: (typeof seedUsers)[number]) {
   const [existing] = await db.select().from(users).where(eq(users.email, seedUser.email)).limit(1);
   if (existing) return existing;
+
+  const password = randomPasswords ? randomBytes(32).toString("base64url") : DEMO_PASSWORD;
 
   try {
     const result = await auth.api.signUpEmail({
       body: {
         name: seedUser.name,
         email: seedUser.email,
-        password: DEMO_PASSWORD,
+        password,
         username: seedUser.username,
         bio: seedUser.bio,
         homeBase: seedUser.homeBase,
@@ -152,7 +156,11 @@ async function main() {
 
   const counts = await db.select({ id: photos.id }).from(photos);
   console.log(`✓ seed complete · ${counts.length} archive records`);
-  console.log(`  demo login: hiker@gohiking.club / ${DEMO_PASSWORD}`);
+  if (randomPasswords) {
+    console.log("  production seed: all demo accounts use random passwords (not shown)");
+  } else {
+    console.log(`  demo login: hiker@gohiking.club / ${DEMO_PASSWORD}`);
+  }
 }
 
 main()

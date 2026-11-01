@@ -1,0 +1,88 @@
+name: gohiking
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-gohiking}
+      POSTGRES_USER: ${POSTGRES_USER:-gohiking}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-gohiking} -d ${POSTGRES_DB:-gohiking}"]
+      interval: 5s
+      timeout: 4s
+      retries: 20
+      start_period: 5s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  app:
+    image: ${APP_IMAGE:-ghcr.io/aaronlou/gohiking-club.ts:latest}
+    pull_policy: always
+    restart: unless-stopped
+    init: true
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${APP_PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      APP_NAME: 山行档案
+      APP_URL: ${APP_URL:-https://gohiking.club}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-https://gohiking.club}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET in .env}
+      AUTH_SECURE_COOKIES: "true"
+      SHOW_DEMO_ACCOUNT: "false"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-gohiking}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/${POSTGRES_DB:-gohiking}
+      MEDIA_ROOT: /data/media
+      REJECTED_RETENTION_HOURS: ${REJECTED_RETENTION_HOURS:-24}
+      UPLOAD_MAX_MB: ${UPLOAD_MAX_MB:-30}
+      UPLOADS_PER_HOUR: ${UPLOADS_PER_HOUR:-12}
+      AI_PROVIDER: ${AI_PROVIDER:-openai}
+      AI_BASE_URL: ${AI_BASE_URL:-https://api.deepseek.com}
+      AI_API_KEY: ${DEEPSEEK_API_KEY:?set DEEPSEEK_API_KEY in .env}
+      AI_MODEL: ${AI_MODEL:-deepseek-flash}
+      AI_TIMEOUT_MS: ${AI_TIMEOUT_MS:-180000}
+      CRON_SECRET: ${CRON_SECRET:-}
+    volumes:
+      - media:/data/media
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 8s
+      retries: 5
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+  # One-off initial content. `SEED_RANDOM_PASSWORDS=true` prevents known demo logins.
+  seed:
+    profiles: ["seed"]
+    image: ${SEED_IMAGE:-ghcr.io/aaronlou/gohiking-club.ts:seed-latest}
+    pull_policy: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      APP_URL: ${APP_URL:-https://gohiking.club}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-https://gohiking.club}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET in .env}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-gohiking}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/${POSTGRES_DB:-gohiking}
+      MEDIA_ROOT: /data/media
+      SEED_RANDOM_PASSWORDS: "true"
+    volumes:
+      - media:/data/media
+
+volumes:
+  pgdata:
+  media:

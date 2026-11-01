@@ -7556,3 +7556,26 @@ body:has(.studio-page) .site-footer {
     transform: scale(0.985);
   }
 }
+
+
+.site-footer__icp {
+  color: rgba(243, 238, 227, 0.4);
+  border-bottom: 1px solid transparent;
+  transition:
+    color 0.25s var(--ease),
+    border-color 0.25s var(--ease);
+}
+
+.site-footer__icp:hover {
+  color: rgba(243, 238, 227, 0.75);
+  border-color: rgba(243, 238, 227, 0.3);
+}
+
+@media (max-width: 760px) {
+  .site-footer__icp {
+    width: 100%;
+    font-size: 7px;
+    letter-spacing: 0.06em;
+    padding-top: 2px;
+  }
+}

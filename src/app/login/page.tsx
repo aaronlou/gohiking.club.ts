@@ -36,7 +36,7 @@ export default async function LoginPage({
       note="登录后可以放进新的照片，翻看完整的观看手记，继续整理那些从山上带回来的光。"
       image={image}
     >
-      <LoginForm next={destination} />
+      <LoginForm next={destination} showDemo={process.env.SHOW_DEMO_ACCOUNT === "true"} />
     </AuthFrame>
   );
 }
