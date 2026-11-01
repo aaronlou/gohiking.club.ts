@@ -1,9 +1,9 @@
 export const SITE = {
   name: "山行档案",
   latin: "GOHIKING.CLUB",
-  tagline: "只留下值得背下山的照片",
+  tagline: "把走过的山野，好好收起来",
   description:
-    "为户外徒步者建立的影像档案馆。每一张照片都经过多模态 AI 的认真观看，只留下 3 分以上的山野影像。",
+    "为户外徒步者建立的影像档案馆。每一张照片都会被认真看见，并留下一份温柔、具体的中文手记。",
   url: process.env.NEXT_PUBLIC_APP_URL ?? process.env.APP_URL ?? "http://localhost:3000",
 } as const;
 

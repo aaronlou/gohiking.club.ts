@@ -2,12 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CameraIcon, GridIcon, UploadIcon } from "@/components/icons";
+import { GridIcon, UploadIcon } from "@/components/icons";
 
 const links = [
   { href: "/studio", label: "我的档案", latin: "ARCHIVE", icon: GridIcon },
-  { href: "/studio/upload", label: "提交照片", latin: "SUBMIT", icon: UploadIcon },
-  { href: "/camera", label: "电子相机", latin: "CAMERA", icon: CameraIcon },
+  { href: "/studio/upload", label: "放进照片", latin: "ADD", icon: UploadIcon },
 ];
 
 export function StudioNav({ rejectedCount }: { rejectedCount: number }) {

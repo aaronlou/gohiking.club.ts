@@ -16,19 +16,19 @@ function errorResponse(message: string, code: string, status: number) {
 export async function POST(request: Request) {
   const user = await requireApiUser(request);
   if (!user) {
-    return errorResponse("请先登录，再上传山野照片", "unauthorized", 401);
+    return errorResponse("先登录，再把山野放进来吧。", "unauthorized", 401);
   }
 
   const contentLength = Number(request.headers.get("content-length") ?? 0);
   if (contentLength > MAX_UPLOAD_BYTES + 2 * 1024 * 1024) {
-    return errorResponse("照片超过大小限制", "too_large", 413);
+    return errorResponse("这张照片有点大，换一张试试吧。", "too_large", 413);
   }
 
   const limit = Number(process.env.UPLOADS_PER_HOUR ?? 12);
   const recent = await countRecentUploads(user.id, 1);
   if (recent >= limit) {
     return errorResponse(
-      `每小时最多提交 ${limit} 张照片，让每一次观看都更认真一些。`,
+      `慢一点也没关系。每小时最多可以放进 ${limit} 张照片，让每一次观看都更认真。`,
       "rate_limited",
       429,
     );
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
   try {
     formData = await request.formData();
   } catch {
-    return errorResponse("无法读取上传内容，请重试", "invalid_form", 400);
+    return errorResponse("照片没有顺利传过来，再试一次吧。", "invalid_form", 400);
   }
 
   const photoFile = formData.get("photo");
@@ -48,18 +48,18 @@ export async function POST(request: Request) {
     !("arrayBuffer" in photoFile) ||
     !("size" in photoFile)
   ) {
-    return errorResponse("请选择一张照片", "missing_file", 400);
+    return errorResponse("先挑一张照片吧。", "missing_file", 400);
   }
 
   const file = photoFile as File;
   if (file.size <= 0) {
-    return errorResponse("照片文件是空的", "empty_file", 400);
+    return errorResponse("这张照片好像没有内容，换一张试试吧。", "empty_file", 400);
   }
   if (file.size > MAX_UPLOAD_BYTES) {
-    return errorResponse("照片超过大小限制", "too_large", 413);
+    return errorResponse("这张照片有点大，换一张试试吧。", "too_large", 413);
   }
   if (file.type && !ACCEPTED_MIME_TYPES.has(file.type) && !file.type.startsWith("image/")) {
-    return errorResponse("只接受 JPEG、PNG、WebP、AVIF 或 HEIC 图片", "invalid_type", 415);
+    return errorResponse("可以试试 JPEG、PNG、WebP、AVIF 或 HEIC 格式的照片。", "invalid_type", 415);
   }
 
   const parsed = photoUploadSchema.safeParse({
@@ -69,7 +69,6 @@ export async function POST(request: Request) {
     visibility: formData.get("visibility") ?? "public",
     locationName: formData.get("locationName") ?? "",
     takenAt: formData.get("takenAt") ?? "",
-    cameraId: formData.get("cameraId") ?? "",
     source: formData.get("source") ?? "upload",
   });
 
@@ -87,7 +86,6 @@ export async function POST(request: Request) {
       userId: user.id,
       fileBuffer: buffer,
       fields: parsed.data,
-      cameraId: parsed.data.cameraId || null,
     });
 
     const dto = await getPhotoById(photo.id, user.id);
@@ -97,6 +95,6 @@ export async function POST(request: Request) {
       return errorResponse(error.message, error.code, error.status);
     }
     console.error("[upload] failed", error);
-    return errorResponse("照片没有存下来，请稍后重试", "upload_failed", 500);
+    return errorResponse("照片暂时没有收好，稍后再试一次吧。", "upload_failed", 500);
   }
 }

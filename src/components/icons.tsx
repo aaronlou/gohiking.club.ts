@@ -52,15 +52,6 @@ export function CloseIcon(props: IconProps) {
   );
 }
 
-export function CameraIcon(props: IconProps) {
-  return (
-    <svg {...base} {...props}>
-      <path d="M3 8.5A2.5 2.5 0 0 1 5.5 6H8l1.2-2h5.6L16 6h2.5A2.5 2.5 0 0 1 21 8.5v9a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5z" />
-      <circle cx="12" cy="13" r="3.6" />
-    </svg>
-  );
-}
-
 export function UploadIcon(props: IconProps) {
   return (
     <svg {...base} {...props}>

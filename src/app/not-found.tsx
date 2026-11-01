@@ -4,7 +4,7 @@ import { ArrowDown, ArrowUpRight } from "@/components/icons";
 import { ContourField } from "@/components/contour-field";
 
 export const metadata: Metadata = {
-  title: "这条路径没有通向任何地方",
+  title: "这条路径暂时没有通向任何地方",
 };
 
 export default function NotFound() {
@@ -17,12 +17,12 @@ export default function NotFound() {
           LOST ON THE TRAIL / 404
         </p>
         <h1>
-          这条路径
+          这条路径暂时
           <br />
           <em>没有通向任何地方。</em>
         </h1>
         <p>
-          你要找的照片、档案或页面可能已经被清理，也可能从来没有出现在这张地图上。
+          你要找的照片、档案或页面可能已经去了别的地方，也可能从来没有出现在这张地图上。
           下山的路还在这里。
         </p>
         <div className="not-found__actions">

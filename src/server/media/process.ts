@@ -130,10 +130,10 @@ export async function preparePhoto(
   const metadata = await image.metadata();
 
   if (!metadata.width || !metadata.height) {
-    throw new Error("无法读取图片尺寸");
+    throw new Error("这张图片没有读取成功，换一张试试吧。")
   }
   if (metadata.width < 600 || metadata.height < 400) {
-    throw new Error("照片尺寸过小，请上传长边至少 1200px 的图片");
+    throw new Error("这张图有点小。长边至少需要 1200px，换一张原图试试吧。")
   }
 
   const base = image.clone().resize({

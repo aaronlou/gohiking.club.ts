@@ -189,8 +189,8 @@ export function RegisterForm({ next }: { next: string }) {
       </button>
 
       <p className="auth-terms">
-        注册即表示你同意：上传的照片会接受多模态视觉评审；未入选的照片会在 24 小时后自动清理。
-        照片版权始终属于拍摄者。
+        注册即表示你同意：照片会接受多模态视觉模型的观看；还没被公共档案收录的照片，
+        会先在你身边留 24 小时，再自动移除。照片版权始终属于拍摄者。
       </p>
 
       <p className="auth-switch">

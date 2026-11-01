@@ -3,10 +3,10 @@ import path from "node:path";
 import { eq } from "drizzle-orm";
 import { auth } from "../src/server/auth";
 import { db } from "../src/server/db";
-import { cameras, photos, user as users } from "../src/server/db/schema";
+import { photos, user as users } from "../src/server/db/schema";
 import { preparePhoto } from "../src/server/media/process";
 import { deletePhotoDirectory } from "../src/server/media/storage";
-import { DEMO_PASSWORD, seedCamera, seedPhotos, seedUsers } from "./data";
+import { DEMO_PASSWORD, seedPhotos, seedUsers } from "./data";
 
 const assetRoot = path.join(process.cwd(), "seed", "assets");
 
@@ -51,20 +51,6 @@ async function main() {
   const demoId = userIds.get("linshen");
   if (!demoId) throw new Error("demo user missing");
 
-  const [existingCamera] = await db
-    .select()
-    .from(cameras)
-    .where(eq(cameras.id, seedCamera.id))
-    .limit(1);
-
-  if (!existingCamera) {
-    await db.insert(cameras).values({
-      ...seedCamera,
-      userId: demoId,
-    });
-    console.log(`  camera ${seedCamera.serial}`);
-  }
-
   for (const [index, seedPhoto] of seedPhotos.entries()) {
     const buffer = await readFile(path.join(assetRoot, seedPhoto.asset));
     const authorId = userIds.get(seedPhoto.author);
@@ -82,15 +68,12 @@ async function main() {
         : null;
     const expiresAt =
       seedPhoto.status === "rejected" ? new Date(Date.now() + 24 * 3_600_000) : null;
-    const cameraId =
-      seedPhoto.author === "linshen" && seedPhoto.status === "accepted" ? seedCamera.id : null;
 
     await db
       .insert(photos)
       .values({
         id: seedPhoto.id,
         userId: authorId,
-        cameraId,
         title: seedPhoto.title,
         caption: seedPhoto.caption,
         status: seedPhoto.status,
@@ -112,13 +95,13 @@ async function main() {
         thumbKey: prepared.thumbKey,
         blurData: prepared.blurData,
         dominantColor: prepared.dominantColor,
-        cameraModel: cameraId ? "GOHIKING FIELD / 山脊 35" : "FUJIFILM X-T5",
-        lensModel: cameraId ? "山径 35 · 35mm" : "XF 16-55mm f/2.8",
+        cameraModel: "FUJIFILM X-T5",
+        lensModel: "XF 16-55mm f/2.8",
         aperture: "f/4.0",
         shutterSpeed: "1/250s",
         iso: 200,
         focalLength: "35mm",
-        source: cameraId ? "camera" : "archive",
+        source: "archive",
         creditName: "Unsplash",
         creditUrl: "https://unsplash.com",
         featured: Boolean(seedPhoto.featured),
@@ -132,7 +115,6 @@ async function main() {
         target: photos.id,
         set: {
           userId: authorId,
-          cameraId,
           title: seedPhoto.title,
           caption: seedPhoto.caption,
           status: seedPhoto.status,
@@ -145,6 +127,10 @@ async function main() {
           aiTheme: seedPhoto.theme,
           takenAt,
           locationName: seedPhoto.locationName,
+          visibility: "public",
+          source: "archive",
+          cameraModel: "FUJIFILM X-T5",
+          lensModel: "XF 16-55mm f/2.8",
           width: prepared.width,
           height: prepared.height,
           fileKey: prepared.displayKey,

@@ -60,14 +60,14 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
         <div className="quarantine-banner">
           <div className="shell quarantine-banner__inner">
             <div>
-              <span className="quarantine-banner__label">NOT ACCEPTED / 未入选 · 隔离区</span>
+              <span className="quarantine-banner__label">A LITTLE MORE TIME / 先留在你身边</span>
               <p>
-                这张照片没有达到 3.0 的入选线。它不会被公开，也不会长期保存。
-                <strong>{countdownLabel(photo.expiresAt)}自动清理。</strong>
+                这张照片这次没有走进公共档案。不是它不够好，只是还需要一点时间。
+                它会先留在只给你看的暂存区。<strong>{countdownLabel(photo.expiresAt)}自动移除。</strong>
               </p>
             </div>
             <div className="quarantine-banner__actions">
-              <DeletePhotoButton photoId={photo.id} label="现在清理" />
+              <DeletePhotoButton photoId={photo.id} label="提前删除" />
             </div>
           </div>
         </div>
@@ -77,8 +77,8 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
         <div className="quarantine-banner quarantine-banner--pending">
           <div className="shell quarantine-banner__inner">
             <div>
-              <span className="quarantine-banner__label">IN REVIEW / 等待评审</span>
-              <p>这张照片还没有完成视觉评审。回到工作室可以重新发起评审。</p>
+              <span className="quarantine-banner__label">IN REVIEW / 正在观看</span>
+              <p>我们还没有看完这张照片。回到工作室可以继续，也可以让它先安静地待着。</p>
             </div>
             <Link href="/studio" className="btn btn--outline">
               回到工作室
@@ -104,7 +104,13 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
       <div className="photo-page__layout shell">
         <div className="photo-page__visual">
           <figure className="photo-detail-frame" style={{ backgroundColor: photo.dominantColor ?? undefined }}>
-            <img src={photo.imageUrl} alt={photo.title} fetchPriority="high" />
+            <img
+              src={photo.imageUrl}
+              srcSet={`${photo.thumbUrl} 720w, ${photo.imageUrl} 2200w`}
+              sizes="(max-width: 900px) 100vw, 62vw"
+              alt={photo.title}
+              fetchPriority="high"
+            />
             <figcaption>
               <span>{theme.label} / {theme.latin}</span>
               <span>{formatDate(photo.takenAt)}</span>
@@ -112,7 +118,7 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
           </figure>
           <div className="photo-page__under">
             <p>
-              {photo.caption || "拍摄者没有留下更多文字。画面本身已经是一次说明。"}
+              {photo.caption || "这张照片没有留下文字，但画面已经把当时的风说了一些。"}
             </p>
             {photo.creditName && (
               <a
@@ -134,10 +140,10 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
               <div className="photo-score__top">
                 <span className="eyebrow">
                   <span className="dot" />
-                  FIELD SCORE / 评审分
+                  WATCH NOTE / 观看分
                 </span>
                 <span className={`score-state ${isRejected ? "is-rejected" : ""}`}>
-                  {isRejected ? "未入选" : scoreVerdict(score)}
+                  {isRejected ? "暂存" : scoreVerdict(score)}
                 </span>
               </div>
               <div className="photo-score__number">
@@ -150,7 +156,7 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
               </div>
               <div className="photo-score__legend">
                 <span>1.0</span>
-                <span>入选线 3.0</span>
+                <span>公共档案 3.0</span>
                 <span>5.0</span>
               </div>
             </div>
@@ -237,8 +243,8 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
 
             {isOwner && (
               <div className="photo-owner-actions">
-                <span className="mono">OWNER ACTIONS</span>
-                <DeletePhotoButton photoId={photo.id} label="从档案中删除" />
+                <span className="mono">THIS PHOTO / 这张照片</span>
+                <DeletePhotoButton photoId={photo.id} label="删除这张照片" />
               </div>
             )}
           </div>
@@ -249,10 +255,10 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
         <div className="judgement__head">
           <span className="eyebrow">
             <span className="dot" />
-            THE EDITOR&apos;S NOTE / 评委手记
+            THE EDITOR&apos;S NOTE / 观看手记
           </span>
           <span className="judgement__source">
-            {photo.aiProvider === "archive-editor" ? "档案编辑预置" : `${photo.aiProvider ?? "视觉模型"} · ${photo.aiModel ?? ""}`}
+            {photo.aiProvider === "archive-editor" ? "编辑预置手记" : `${photo.aiProvider ?? "视觉模型"} · ${photo.aiModel ?? ""}`}
           </span>
         </div>
         <div className="judgement__grid">
@@ -260,20 +266,22 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
             <h2>
               {isRejected ? (
                 <>
-                  没有入选，
+                  这次先不放进
                   <br />
-                  但不是<em>白走一趟。</em>
+                  <em>公共档案。</em>
+                  <br />
+                  但没有白走一趟。
                 </>
               ) : (
                 <>
-                  它为什么
+                  这张照片，
                   <br />
-                  <em>值得留下。</em>
+                  为什么<em>打动了我们。</em>
                 </>
               )}
             </h2>
             <div className="judgement__basis">
-              <span className="mono">REVIEW BASIS / 评审依据</span>
+              <span className="mono">HOW WE LOOKED / 我们如何观看</span>
               <ol>
                 {SCORE_RUBRIC.map((item) => (
                   <li key={item.index}>
@@ -285,7 +293,7 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
             </div>
             <p className="judgement__meta">
               {photo.aiProvider === "archive-editor"
-                ? "这张照片由档案编辑预置评审，作为示例内容保留在公开展示中。"
+                ? "这张照片的观看手记由档案编辑预置，作为示例内容保留在公开展示中。"
                 : `这一份手记由 ${photo.aiProvider ?? "视觉模型"} · ${photo.aiModel ?? ""} 生成，并随照片一起长期保存。`}
             </p>
           </div>
@@ -293,7 +301,7 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
             <div className="judgement-list">
               <div className="judgement-list__head">
                 <span>01</span>
-                <h3>{isRejected ? "仍然成立的地方" : "它成立的地方"}</h3>
+                <h3>{isRejected ? "它依然好的地方" : "它打动人的地方"}</h3>
                 <small>WHAT WORKS</small>
               </div>
               <ol>
@@ -303,14 +311,14 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
                     <p>{item}</p>
                   </li>
                 ))}
-                {photo.strengths.length === 0 && <li><p>这张照片没有留下足够清楚的视觉理由。</p></li>}
+                {photo.strengths.length === 0 && <li><p>这一次，画面还没有把它的理由说清楚。</p></li>}
               </ol>
             </div>
             <div className="judgement-list judgement-list--next">
               <div className="judgement-list__head">
                 <span>02</span>
-                <h3>{isRejected ? "为什么没有入选" : "下一次，可以更好"}</h3>
-                <small>{isRejected ? "WHY NOT" : "NEXT FRAME"}</small>
+                <h3>{isRejected ? "下一次，可以试试" : "下一次，可以更好"}</h3>
+                <small>{isRejected ? "NEXT TIME" : "NEXT FRAME"}</small>
               </div>
               <ol>
                 {photo.improvements.map((item, index) => (
@@ -319,7 +327,7 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
                     <p>{item}</p>
                   </li>
                 ))}
-                {photo.improvements.length === 0 && <li><p>继续保持，下一张会更好。</p></li>}
+                {photo.improvements.length === 0 && <li><p>慢慢来，下一张会更好。</p></li>}
               </ol>
             </div>
           </div>

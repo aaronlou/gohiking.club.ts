@@ -22,7 +22,13 @@ export function AuthFrame({
     <section className="auth-page">
       <div className="auth-visual">
         {image ? (
-          <img src={image.imageUrl} alt={image.title} className="auth-visual__image" />
+          <img
+            src={image.imageUrl}
+            srcSet={`${image.thumbUrl} 720w, ${image.imageUrl} 2200w`}
+            sizes="(max-width: 900px) 100vw, 46vw"
+            alt={image.title}
+            className="auth-visual__image"
+          />
         ) : (
           <div className="auth-visual__fallback" />
         )}
@@ -53,7 +59,7 @@ export function AuthFrame({
         <p className="auth-visual__quote">
           山野不会替你按下快门。
           <br />
-          但总有人，愿意为一次观看
+          但总有人，愿意为一次看见
           <br />
           <em>多走一段路。</em>
         </p>

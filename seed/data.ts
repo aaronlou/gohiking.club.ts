@@ -372,7 +372,7 @@ export const seedPhotos: SeedPhoto[] = [
     theme: "trail",
     score: 2.7,
     summary:
-      "公路的对称构图很工整，色彩也漂亮，但这更像一张公路旅行记录：画面里没有徒步的线索，也没有人在山野中的位置。作为「山行档案」的长期收藏，它还不够。",
+      "公路的对称构图很工整，色彩也漂亮，这更像一次出发途中的路过：画面里没有徒步的线索，也没有人在山野中的位置。它没有进入公共档案，不是因为不美，而是这一次，我们想把位置留给更有现场感的画面。它仍然是一段路的记忆。",
     strengths: [
       "两侧红岩形成清晰的引导线，画面有稳定的透视。",
       "天空与岩壁的冷暖对比舒服，色彩没有失真。",
@@ -507,15 +507,3 @@ export const seedPhotos: SeedPhoto[] = [
     status: "accepted",
   },
 ];
-
-export const seedCamera = {
-  id: "b2000000-0000-4000-8000-000000000001",
-  name: "山脊 35",
-  serial: "GH·26·LINS",
-  bodyColor: "moss",
-  accentColor: "#e96b40",
-  lens: "field-35",
-  filmStock: "pine-400",
-  strap: "canvas",
-  engraving: "林深 · 2026",
-};

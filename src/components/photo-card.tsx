@@ -25,6 +25,8 @@ export function PhotoCard({ photo, index, layout = "grid", priority = false }: P
       >
           <img
             src={photo.thumbUrl}
+            srcSet={`${photo.thumbUrl} 720w, ${photo.imageUrl} 2200w`}
+            sizes="(max-width: 760px) 46vw, (max-width: 1100px) 32vw, 30vw"
             alt={photo.title}
             loading={priority ? "eager" : "lazy"}
             fetchPriority={priority ? "high" : "auto"}
@@ -75,7 +77,14 @@ export function PhotoCard({ photo, index, layout = "grid", priority = false }: P
 export function PhotoCardSimple({ photo, index }: { photo: PhotoDto; index: number }) {
   return (
     <Link href={`/photo/${photo.id}`} className="photo-mini">
-      <img src={photo.thumbUrl} alt={photo.title} loading="lazy" />
+      <img
+        src={photo.thumbUrl}
+        srcSet={`${photo.thumbUrl} 720w, ${photo.imageUrl} 2200w`}
+        sizes="(max-width: 760px) 78vw, 32vw"
+        alt={photo.title}
+        loading="lazy"
+        decoding="async"
+      />
       <span className="photo-mini__score">{formatScore(photo.score)}</span>
     </Link>
   );

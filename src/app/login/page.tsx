@@ -7,7 +7,7 @@ import { getFeaturedPhotos } from "@/server/photos/queries";
 
 export const metadata = {
   title: "成员入口",
-  description: "登录山行档案，上传照片、查看评审手记并管理你的山野影像档案。",
+  description: "登录山行档案，放进新的照片，翻看那些被认真看过的山野手记。",
 };
 
 export default async function LoginPage({
@@ -33,7 +33,7 @@ export default async function LoginPage({
           <em>山行档案。</em>
         </>
       }
-      note="登录后可以提交照片、查看完整的评审手记，继续整理那些从山上带回来的光。"
+      note="登录后可以放进新的照片，翻看完整的观看手记，继续整理那些从山上带回来的光。"
       image={image}
     >
       <LoginForm next={destination} />

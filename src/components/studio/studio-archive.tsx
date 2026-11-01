@@ -13,9 +13,9 @@ type Filter = "all" | "accepted" | "attention" | "rejected";
 
 const filters: { id: Filter; label: string }[] = [
   { id: "all", label: "全部" },
-  { id: "accepted", label: "已入选" },
-  { id: "attention", label: "待处理" },
-  { id: "rejected", label: "未入选" },
+  { id: "accepted", label: "已收录" },
+  { id: "attention", label: "观看中" },
+  { id: "rejected", label: "暂存" },
 ];
 
 export function StudioArchive({ photos }: { photos: PhotoDto[] }) {
@@ -69,7 +69,7 @@ export function StudioArchive({ photos }: { photos: PhotoDto[] }) {
           </p>
           {filter === "all" && (
             <Link href="/studio/upload" className="btn btn--ink">
-              提交第一张照片
+              放进第一张照片
               <ArrowUpRight />
             </Link>
           )}
@@ -86,14 +86,14 @@ export function StudioArchive({ photos }: { photos: PhotoDto[] }) {
                   <img src={photo.thumbUrl} alt={photo.title} loading="lazy" />
                   <span className="studio-photo__status">
                     {photo.status === "accepted"
-                      ? "入选"
+                      ? "已收录"
                       : photo.status === "rejected"
-                        ? "未入选"
+                        ? "暂存"
                         : photo.status === "failed"
-                          ? "评审中断"
-                          : "评审中"}
+                          ? "观看中断"
+                          : "观看中"}
                   </span>
-                  {isRejected && <span className="studio-photo__timer">{countdownLabel(photo.expiresAt)}</span>}
+                  {isRejected && <span className="studio-photo__timer">{countdownLabel(photo.expiresAt)}移除</span>}
                 </Link>
                 <div className="studio-photo__info">
                   <div className="studio-photo__meta">
@@ -109,8 +109,8 @@ export function StudioArchive({ photos }: { photos: PhotoDto[] }) {
                     {photo.status === "accepted"
                       ? photo.summary?.slice(0, 62)
                       : photo.status === "rejected"
-                        ? "查看未入选原因，或立即清理。"
-                        : "评审还没有完成。"}
+                        ? "看看这次的手记，或提前删除。"
+                        : "我们还在看这张照片。"}
                   </p>
                   <div className="studio-photo__actions">
                     {photo.status === "accepted" && (
@@ -131,7 +131,7 @@ export function StudioArchive({ photos }: { photos: PhotoDto[] }) {
                         </span>
                         <DeletePhotoButton
                           photoId={photo.id}
-                          label="立即清理"
+                          label="提前删除"
                           className="studio-action studio-action--danger"
                         />
                       </>
@@ -139,7 +139,7 @@ export function StudioArchive({ photos }: { photos: PhotoDto[] }) {
                     {isPending && (
                       <RetryEvaluationButton
                         photoId={photo.id}
-                        label={photo.status === "failed" ? "重新评审" : "继续评审"}
+                        label={photo.status === "failed" ? "再看一次" : "继续观看"}
                       />
                     )}
                   </div>

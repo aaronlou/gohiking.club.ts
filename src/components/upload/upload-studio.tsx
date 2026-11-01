@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { PHOTO_THEMES } from "@/lib/constants";
 import {
@@ -13,7 +12,7 @@ import {
 } from "@/lib/upload-client";
 import { cn } from "@/lib/utils";
 import type { PhotoDto } from "@/server/photos/dto";
-import { ArrowUpRight, CloseIcon, EyeIcon, LockIcon, SpinnerIcon, UploadIcon } from "@/components/icons";
+import { CloseIcon, EyeIcon, LockIcon, SpinnerIcon, UploadIcon } from "@/components/icons";
 import { useToast } from "@/components/toast";
 import { EvaluationResult } from "./evaluation-result";
 
@@ -23,14 +22,14 @@ const ACCEPT = "image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif
 type Stage = "compose" | "uploading" | "evaluating" | "done" | "error";
 
 const reviewMessages = [
-  "正在读取画面里的光…",
-  "检查构图与视觉重心…",
-  "判断它是否真正属于山野…",
-  "寻找值得留下的那个瞬间…",
-  "写下这一张的评审手记…",
+  "正在看画面里的光…",
+  "正在感受当时的空气…",
+  "正在找这张照片打动人的地方…",
+  "正在判断它和山野的距离…",
+  "正在写一份只属于这张照片的手记…",
 ];
 
-export function UploadStudio({ camera }: { camera: { name: string; serial: string } | null }) {
+export function UploadStudio() {
   const { push } = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
   const previewRef = useRef<string | null>(null);
@@ -143,7 +142,7 @@ export function UploadStudio({ camera }: { camera: { name: string; serial: strin
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (caught) {
       const uploadError = caught instanceof UploadError ? caught : null;
-      setError(uploadError?.message ?? "上传或评审没有完成，请重试。");
+      setError(uploadError?.message ?? "照片没有顺利进来，再试一次吧。");
       setStage("error");
     }
   }
@@ -160,7 +159,7 @@ export function UploadStudio({ camera }: { camera: { name: string; serial: strin
       setResult(evaluated);
       setStage("done");
     } catch (caught) {
-      setError(caught instanceof UploadError ? caught.message : "评审仍未完成，请稍后重试。");
+      setError(caught instanceof UploadError ? caught.message : "观看还没有完成，稍后再试一次吧。");
       setStage("error");
     }
   }
@@ -201,7 +200,7 @@ export function UploadStudio({ camera }: { camera: { name: string; serial: strin
     return (
       <div className="review-stage">
         <div className="review-stage__media">
-          {preview && <img src={preview} alt="正在评审的照片预览" />}
+          {preview && <img src={preview} alt="正在观看的照片预览" />}
           {stage === "uploading" && (
             <div className="review-stage__uploading">
               <span>{progress}%</span>
@@ -224,16 +223,16 @@ export function UploadStudio({ camera }: { camera: { name: string; serial: strin
               ? "SECURING THE NEGATIVE / 正在接收"
               : stage === "evaluating"
                 ? "THE VISUAL JURY / 正在观看"
-                : "REVIEW INTERRUPTED / 评审中断"}
+                : "A SMALL PAUSE / 先停一下"}
           </p>
 
           {stage === "uploading" && (
             <>
-              <h2>正在把这张照片，安全地放上工作台。</h2>
+              <h2>正在把这张照片，好好地收进来。</h2>
               <div className="progress-bar">
                 <span style={{ width: `${progress}%` }} />
               </div>
-              <p className="review-stage__note">原图会先存入隔离区，只有通过评审后才会进入公开档案。</p>
+              <p className="review-stage__note">原图会先进到只给你看的暂存区。等我们认真看完，再决定它去哪里。</p>
             </>
           )}
 
@@ -253,7 +252,7 @@ export function UploadStudio({ camera }: { camera: { name: string; serial: strin
               </div>
               <p className="review-stage__note">
                 视觉模型正在从光影、构图、山野叙事与独特观看四个维度阅读这张照片。
-                通常需要 10–40 秒，请让它认真看完。
+                通常需要 10–40 秒。谢谢你愿意等它看完。
               </p>
               <div className="review-stage__skeleton">
                 <span />
@@ -265,12 +264,12 @@ export function UploadStudio({ camera }: { camera: { name: string; serial: strin
 
           {stage === "error" && (
             <>
-              <h2>这次评审没有走完。</h2>
+              <h2>这次观看，先停在这里。</h2>
               <p className="review-stage__error">{error}</p>
               <div className="review-stage__actions">
                 {photoId ? (
                   <button type="button" className="btn btn--ink" onClick={retryEvaluation}>
-                    重新发起评审
+                    再看一次
                   </button>
                 ) : (
                   <button type="button" className="btn btn--ink" onClick={() => setStage("compose")}>
@@ -283,14 +282,14 @@ export function UploadStudio({ camera }: { camera: { name: string; serial: strin
               </div>
               {photoId && (
                 <p className="review-stage__note">
-                  照片仍安全保存在隔离区。你可以稍后从工作室重新发起评审，或直接删除。
+                  照片还安全地待在只给你看的暂存区。你可以稍后再看一次，或直接删除。
                 </p>
               )}
             </>
           )}
 
           <div className="review-stage__foot">
-            <span>{camera ? `FIELD CAMERA · ${camera.name}` : "GOHIKING FIELD ARCHIVE"}</span>
+            <span>GOHIKING FIELD ARCHIVE</span>
             <span>SCORE THRESHOLD / 3.0</span>
           </div>
         </div>
@@ -304,7 +303,7 @@ export function UploadStudio({ camera }: { camera: { name: string; serial: strin
         <div className="upload-steps">
           <div className="is-active">
             <span>01</span>
-            <p>选择照片</p>
+            <p>挑一张照片</p>
           </div>
           <div>
             <span>02</span>
@@ -312,7 +311,7 @@ export function UploadStudio({ camera }: { camera: { name: string; serial: strin
           </div>
           <div>
             <span>03</span>
-            <p>交给评审</p>
+            <p>请山野看看</p>
           </div>
         </div>
 
@@ -328,7 +327,7 @@ export function UploadStudio({ camera }: { camera: { name: string; serial: strin
         >
           {preview ? (
             <>
-              <img src={preview} alt="待提交照片预览" className="dropzone__preview" />
+              <img src={preview} alt="准备放进档案的照片预览" className="dropzone__preview" />
               <div className="dropzone__overlay">
                 <button type="button" onClick={() => inputRef.current?.click()} className="btn btn--paper btn--sm">
                   换一张
@@ -347,8 +346,8 @@ export function UploadStudio({ camera }: { camera: { name: string; serial: strin
               <span className="dropzone__icon">
                 <UploadIcon />
               </span>
-              <strong>把照片放到这里</strong>
-              <p>或点击选择一张山野照片</p>
+              <strong>把这一张放到这里</strong>
+              <p>或点一下，从相册里挑一张山野</p>
               <span className="dropzone__formats">JPEG · PNG · WEBP · HEIC / MAX {MAX_MB}MB</span>
             </button>
           )}
@@ -365,22 +364,14 @@ export function UploadStudio({ camera }: { camera: { name: string; serial: strin
         </div>
 
         <div className="upload-tips">
-          <span className="mono">BEFORE YOU SUBMIT / 提交之前</span>
+          <span className="mono">BEFORE IT GOES IN / 放进之前</span>
           <ul>
-            <li>原图越完整，评审越准确。避免二次压缩和截图。</li>
-            <li>尽量保留 EXIF。拍摄时间与器材会自动写入档案。</li>
-            <li>低分照片会说明原因，并在 24 小时后自动清理。</li>
+            <li>原图越完整，观看就越准确。尽量避开二次压缩和截图。</li>
+            <li>保留 EXIF 更好。拍摄时间与器材会自己走进档案。</li>
+            <li>还没到 3 分的照片，也会收到手记，并先在你身边留 24 小时。</li>
           </ul>
         </div>
 
-        {camera && (
-          <div className="upload-camera-note">
-            <span>你的电子相机</span>
-            <strong>{camera.name}</strong>
-            <small>{camera.serial}</small>
-            <Link href="/camera">去取景器里拍一张 <ArrowUpRight /></Link>
-          </div>
-        )}
       </section>
 
       <section className="upload-form-panel">
@@ -510,11 +501,11 @@ export function UploadStudio({ camera }: { camera: { name: string; serial: strin
         <div className="upload-submit">
           <button type="submit" className="btn btn--ink btn--full">
             <UploadIcon />
-            交给山野评审
+            请山野认真看看
           </button>
           <p>
-            提交即表示你确认拥有这张照片的发布权。多模态模型会给出 1–5 分与中文评审手记，
-            3.0 分以上进入档案。
+            放进来的照片，需要是你自己拍下或拥有发布权的。我们会给出一份 1–5 分的中文手记：
+            3.0 分以上会与大家见面；还没到 3 分，也会先在你身边留 24 小时。
           </p>
         </div>
       </section>

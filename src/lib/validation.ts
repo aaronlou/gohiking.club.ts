@@ -1,10 +1,4 @@
 import { z } from "zod";
-import {
-  CAMERA_BODIES,
-  CAMERA_LENSES,
-  FILM_STOCKS,
-  STRAPS,
-} from "./camera-presets";
 import { PHOTO_THEME_IDS } from "./constants";
 
 const themeIds = PHOTO_THEME_IDS as [string, ...string[]];
@@ -21,22 +15,10 @@ export const photoUploadSchema = z.object({
     .regex(/^\d{4}-\d{2}-\d{2}$/, "日期格式应为 YYYY-MM-DD")
     .optional()
     .or(z.literal("")),
-  cameraId: z.string().uuid().optional().or(z.literal("")),
-  source: z.enum(["upload", "camera"]).default("upload"),
-});
-
-export const cameraDesignSchema = z.object({
-  name: z.string().trim().min(1, "给相机取一个名字").max(28, "相机名最多 28 个字符"),
-  bodyColor: z.enum(CAMERA_BODIES.map((body) => body.id) as [string, ...string[]]),
-  accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/),
-  lens: z.enum(CAMERA_LENSES.map((lens) => lens.id) as [string, ...string[]]),
-  filmStock: z.enum(FILM_STOCKS.map((film) => film.id) as [string, ...string[]]),
-  strap: z.enum(STRAPS.map((strap) => strap.id) as [string, ...string[]]),
-  engraving: z.string().trim().max(16, "刻字最多 16 个字符").optional().default(""),
+  source: z.enum(["upload", "archive"]).default("upload"),
 });
 
 export type PhotoUploadInput = z.infer<typeof photoUploadSchema>;
-export type CameraDesignInput = z.infer<typeof cameraDesignSchema>;
 
 export const registerSchema = z
   .object({

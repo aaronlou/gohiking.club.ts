@@ -9,6 +9,7 @@ import { getCurrentUser } from "@/server/auth-session";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { ToastProvider } from "@/components/toast";
+import { MobileDock } from "@/components/mobile-dock";
 import { SITE } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
@@ -16,13 +17,13 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   title: {
-    default: "山行档案 · 只留下值得背下山的照片",
+    default: "山行档案 · 把走过的山野，好好收起来",
     template: "%s · 山行档案",
   },
   description: SITE.description,
   keywords: ["户外摄影", "徒步", "山野影像", "摄影档案", "gohiking"],
   openGraph: {
-    title: "山行档案 · GOHIKING.CLUB",
+    title: "山行档案 · 把走过的山野，好好收起来",
     description: SITE.description,
     type: "website",
     locale: "zh_CN",
@@ -30,11 +31,21 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "山行档案 · GOHIKING.CLUB",
+    title: "山行档案 · 把走过的山野，好好收起来",
     description: SITE.description,
   },
   icons: {
     icon: "/icon.svg",
+    apple: "/apple-touch-icon.png",
+  },
+  applicationName: "山行档案",
+  appleWebApp: {
+    capable: true,
+    title: "山行档案",
+    statusBarStyle: "default",
+  },
+  formatDetection: {
+    telephone: false,
   },
 };
 
@@ -49,7 +60,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const user = await getCurrentUser();
 
   return (
-    <html lang="zh-CN">
+    <html lang="zh-CN" data-scroll-behavior="smooth">
       <body>
         <a href="#main" className="skip-link">
           跳到正文
@@ -61,6 +72,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             {children}
           </main>
           <SiteFooter />
+          <MobileDock user={user ? { name: user.name, username: user.username } : null} />
         </ToastProvider>
       </body>
     </html>

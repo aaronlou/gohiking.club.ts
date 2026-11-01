@@ -8,22 +8,20 @@ export function SiteFooter() {
       <div className="site-footer__cta shell">
         <p className="eyebrow eyebrow--light">
           <span className="dot" />
-          OPEN CALL / 长期征稿
+          ALWAYS OPEN / 长期开放
         </p>
         <h2>
-          下一张入选的照片，
+          你背回来的每一张，
           <br />
-          可能就是你
-          <br className="only-mobile" />
-          <em>背上山</em>的那一张。
+          都值得被<em>好好看见。</em>
         </h2>
         <div className="site-footer__actions">
           <Link href="/login?next=/studio/upload" className="btn btn--signal">
-            提交一张照片
+            放进一张照片
             <ArrowUpRight />
           </Link>
           <Link href="/archive" className="btn btn--outline-light">
-            浏览完整档案
+            去看看山野档案
             <ArrowUpRight />
           </Link>
         </div>
@@ -36,7 +34,7 @@ export function SiteFooter() {
             山行档案
             <span>GOHIKING.CLUB</span>
           </p>
-          <small>为户外徒步者建立的影像档案馆。每一张留下，都有理由。</small>
+          <small>为户外徒步者建立的影像档案馆。每一张被看见，都有理由。</small>
         </div>
         <div className="site-footer__col">
           <span className="footer-label">EXPLORE / 浏览</span>
@@ -48,13 +46,12 @@ export function SiteFooter() {
         <div className="site-footer__col">
           <span className="footer-label">STUDIO / 工作室</span>
           <Link href="/studio">我的档案</Link>
-          <Link href="/studio/upload">提交照片</Link>
-          <Link href="/camera">相机工坊</Link>
-          <Link href="/#standard">评审标准</Link>
+          <Link href="/studio/upload">放进一张照片</Link>
+          <Link href="/#standard">我们如何观看</Link>
         </div>
         <div className="site-footer__col site-footer__col--note">
           <span className="footer-label">A NOTE / 说明</span>
-          <p>照片会被多模态视觉模型认真观看。低于 3 分的照片会说明原因，并在 24 小时后清理。</p>
+          <p>照片会被多模态视觉模型认真观看。还没到 3 分的照片，也会收到具体的手记，并先在你身边留 24 小时。</p>
           <span className="footer-coord">30°40′N · 104°04′E</span>
         </div>
       </div>

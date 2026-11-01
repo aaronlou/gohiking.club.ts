@@ -7,7 +7,7 @@ import { useToast } from "./toast";
 
 export function DeletePhotoButton({
   photoId,
-  label = "立即删除",
+  label = "提前删除",
   redirectTo = "/studio",
   className = "btn btn--outline",
 }: {
@@ -21,7 +21,7 @@ export function DeletePhotoButton({
   const [pending, setPending] = useState(false);
 
   async function remove() {
-    if (!window.confirm("确定删除这张照片吗？文件会立即从服务器移除，且无法恢复。")) return;
+    if (!window.confirm("要现在删除这张照片吗？原图与预览会立即移除，之后无法恢复。也可以再等一等它。")) return;
     setPending(true);
     try {
       const response = await fetch(`/api/photos/${photoId}`, { method: "DELETE" });
@@ -29,7 +29,7 @@ export function DeletePhotoButton({
         push("删除没有完成，请稍后重试", "error");
         return;
       }
-      push("照片已清理");
+      push("照片已经删除");
       router.push(redirectTo);
       router.refresh();
     } finally {
@@ -40,7 +40,7 @@ export function DeletePhotoButton({
   return (
     <button type="button" className={className} onClick={remove} disabled={pending}>
       {pending ? <SpinnerIcon className="spinner" /> : <TrashIcon />}
-      {pending ? "正在清理" : label}
+      {pending ? "正在删除" : label}
     </button>
   );
 }

@@ -28,8 +28,8 @@ describe("labels", () => {
   });
 
   it("maps score verdicts around the 3.0 threshold", () => {
-    expect(scoreVerdict(2.9)).toBe("未入选");
-    expect(scoreVerdict(3)).toBe("入选档案");
-    expect(scoreVerdict(4.6)).toBe("编辑精选");
+    expect(scoreVerdict(2.9)).toBe("先留给你");
+    expect(scoreVerdict(3)).toBe("放进档案");
+    expect(scoreVerdict(4.6)).toBe("编辑心头好");
   });
 });

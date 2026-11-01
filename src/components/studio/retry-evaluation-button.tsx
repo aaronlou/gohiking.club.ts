@@ -8,7 +8,7 @@ import { evaluatePhotoRequest, UploadError } from "@/lib/upload-client";
 
 export function RetryEvaluationButton({
   photoId,
-  label = "继续评审",
+  label = "继续观看",
   className = "studio-action",
 }: {
   photoId: string;
@@ -23,10 +23,14 @@ export function RetryEvaluationButton({
     setPending(true);
     try {
       const result = await evaluatePhotoRequest(photoId);
-      push(result.accepted ? "照片已入选档案" : "评审完成：这张照片未入选，已进入 24 小时隔离");
+      push(
+        result.accepted
+          ? "这张照片已经放进公共档案"
+          : "这次先留在你的暂存区，24 小时后会自动移除",
+      );
       router.refresh();
     } catch (error) {
-      push(error instanceof UploadError ? error.message : "评审没有完成，请稍后重试", "error");
+      push(error instanceof UploadError ? error.message : "这次观看还没有完成，请稍后重试", "error");
     } finally {
       setPending(false);
     }
@@ -35,7 +39,7 @@ export function RetryEvaluationButton({
   return (
     <button type="button" className={className} onClick={retry} disabled={pending}>
       {pending ? <SpinnerIcon className="spinner" /> : null}
-      {pending ? "正在评审…" : label}
+      {pending ? "正在观看…" : label}
     </button>
   );
 }

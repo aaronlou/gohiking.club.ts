@@ -57,7 +57,7 @@ export default async function ProfilePage({
           <div className="profile-hero__stats">
             <div>
               <strong>{stats.accepted}</strong>
-              <span>张入选</span>
+              <span>张被看见</span>
             </div>
             <div>
               <strong>{stats.averageScore ? stats.averageScore.toFixed(1) : "—"}</strong>
@@ -94,13 +94,13 @@ export default async function ProfilePage({
           <div>
             <p className="eyebrow">
               <span className="dot" />
-              SELECTED FIELD WORK / 入选作品
+              A FEW MOMENTS / 被看见的作品
             </p>
             <h2>{photos.length > 0 ? "从山里带回来的观看" : "档案还在等第一张照片"}</h2>
           </div>
           {isOwner && (
             <Link href="/studio/upload" className="btn btn--ink">
-              提交新照片
+              放进一张照片
               <ArrowUpRight />
             </Link>
           )}
@@ -109,10 +109,10 @@ export default async function ProfilePage({
           <PhotoGrid photos={photos} layout="grid" />
         ) : (
           <div className="profile-empty">
-            <p>这里暂时没有公开的入选照片。</p>
+            <p>这里暂时还没有与大家见面的照片。</p>
             {isOwner && (
               <Link href="/studio/upload" className="text-link">
-                提交第一张
+                放进第一张
                 <ArrowUpRight />
               </Link>
             )}

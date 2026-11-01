@@ -59,7 +59,7 @@ export async function evaluatePhotoRequest(photoId: string): Promise<EvaluationR
   });
   const payload = (await response.json().catch(() => null)) as (ApiError & Partial<EvaluationResponse>) | null;
   if (!response.ok) {
-    throw new UploadError(payload?.error ?? "评审没有完成，请重试。", response.status, payload?.code);
+    throw new UploadError(payload?.error ?? "这次观看还没有完成，稍后再试一次吧。", response.status, payload?.code);
   }
   return payload as EvaluationResponse;
 }

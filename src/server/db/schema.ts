@@ -107,29 +107,6 @@ export const photoStatus = pgEnum("photo_status", [
 
 export const photoVisibility = pgEnum("photo_visibility", ["public", "private"]);
 
-export const cameras = pgTable(
-  "cameras",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    userId: text("user_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
-    name: text("name").notNull(),
-    serial: text("serial").notNull(),
-    bodyColor: text("body_color").notNull(),
-    accentColor: text("accent_color").notNull(),
-    lens: text("lens").notNull(),
-    filmStock: text("film_stock").notNull(),
-    strap: text("strap").notNull(),
-    engraving: text("engraving"),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-  },
-  (table) => [
-    uniqueIndex("cameras_serial_unique").on(table.serial),
-    index("cameras_user_id_idx").on(table.userId),
-  ],
-);
-
 export const photos = pgTable(
   "photos",
   {
@@ -137,7 +114,6 @@ export const photos = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    cameraId: uuid("camera_id").references(() => cameras.id, { onDelete: "set null" }),
     title: text("title").notNull(),
     caption: text("caption"),
     status: photoStatus("status").default("evaluating").notNull(),
@@ -209,19 +185,12 @@ export const likes = pgTable(
 
 export const userRelations = relations(user, ({ many }) => ({
   photos: many(photos),
-  cameras: many(cameras),
   likes: many(likes),
 }));
 
 export const photoRelations = relations(photos, ({ one, many }) => ({
   author: one(user, { fields: [photos.userId], references: [user.id] }),
-  camera: one(cameras, { fields: [photos.cameraId], references: [cameras.id] }),
   likes: many(likes),
-}));
-
-export const cameraRelations = relations(cameras, ({ one, many }) => ({
-  owner: one(user, { fields: [cameras.userId], references: [user.id] }),
-  photos: many(photos),
 }));
 
 export const likeRelations = relations(likes, ({ one }) => ({
@@ -232,5 +201,3 @@ export const likeRelations = relations(likes, ({ one }) => ({
 export type User = typeof user.$inferSelect;
 export type Photo = typeof photos.$inferSelect;
 export type NewPhoto = typeof photos.$inferInsert;
-export type Camera = typeof cameras.$inferSelect;
-export type NewCamera = typeof cameras.$inferInsert;

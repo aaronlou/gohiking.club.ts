@@ -16,7 +16,7 @@ import { getArchiveData } from "@/server/photos/queries";
 
 export const metadata: Metadata = {
   title: "影像档案",
-  description: "按主题、月份与摄影师浏览山行档案中所有入选的户外徒步影像。",
+  description: "按主题、月份与摄影师浏览山行档案里所有被认真看过的户外徒步影像。",
 };
 
 const tabs = [
@@ -45,7 +45,7 @@ function ArchiveHero({
         <div>
           <p className="eyebrow">
             <span className="dot" />
-            THE COMPLETE ARCHIVE / 全部入选影像
+            THE COMPLETE ARCHIVE / 被看见的全部影像
           </p>
           <h1>
             影像<em>档案</em>
@@ -54,17 +54,17 @@ function ArchiveHero({
         <div className="page-hero__aside">
           <p>
             {currentTheme
-              ? `正在浏览「${currentTheme.label}」主题。每一张被留下的照片，都保留着它入选的理由。`
+              ? `正在浏览「${currentTheme.label}」主题。每一张被收进来的照片，都保留着它打动人的理由。`
               : "不是一次性的信息流。这里按照主题、时间与摄影师重新组织山野，让一张照片在离开首页之后仍然找得到自己的位置。"}
           </p>
           <div className="page-hero__stats">
             <div>
               <strong>{String(total).padStart(3, "0")}</strong>
-              <span>入选影像</span>
+              <span>公共影像</span>
             </div>
             <div>
               <strong>3.0</strong>
-              <span>入选线</span>
+              <span>邀请线</span>
             </div>
             <div>
               <strong>5</strong>
@@ -143,7 +143,7 @@ function ThemeGrid({ photos }: { photos: PhotoDto[] }) {
     <section className="archive-flat">
       <SectionHeading
         index="01"
-        kicker="FILTERED BY THEME / 主题筛选"
+        kicker="A THEME, A WAY OF SEEING / 主题里的山野"
         title={`${getTheme(photos[0]?.theme ?? "trail").label} · ${getTheme(photos[0]?.theme ?? "trail").latin}`}
         description={getTheme(photos[0]?.theme ?? "trail").note}
       />
@@ -161,7 +161,7 @@ function DateIndex({ photos }: { photos: PhotoDto[] }) {
           <div className="date-group__rail">
             <span>{group.latin}</span>
             <h2>{group.label}</h2>
-            <small>{group.photos.length} 张入选</small>
+            <small>{group.photos.length} 张被看见</small>
           </div>
           <div className="date-group__grid">
             <PhotoGrid photos={group.photos} layout="grid" />
@@ -194,7 +194,7 @@ function AuthorIndex({ photos }: { photos: PhotoDto[] }) {
             </div>
             <div className="author-card__stats">
               <span>
-                <strong>{author.photos.length}</strong> 张入选
+                <strong>{author.photos.length}</strong> 张被看见
               </span>
               <span>
                 <strong>{author.averageScore.toFixed(1)}</strong> 平均评分

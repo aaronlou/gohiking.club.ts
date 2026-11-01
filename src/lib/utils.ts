@@ -88,13 +88,13 @@ export function relativeTime(value: Date | string) {
 }
 
 export function countdownLabel(expiresAt: Date | string | null) {
-  if (!expiresAt) return "即将清理";
+  if (!expiresAt) return "稍后";
   const remaining = new Date(expiresAt).getTime() - Date.now();
-  if (remaining <= 0) return "正在清理";
+  if (remaining <= 0) return "马上";
   const hours = Math.floor(remaining / 3_600_000);
   const minutes = Math.floor((remaining % 3_600_000) / 60_000);
-  if (hours > 0) return `${hours} 小时 ${minutes} 分后清理`;
-  return `${minutes} 分钟后清理`;
+  if (hours > 0) return `${hours} 小时 ${minutes} 分后`;
+  return `${minutes} 分钟后`;
 }
 
 export function formatScore(score: string | number | null | undefined) {
@@ -105,10 +105,10 @@ export function formatScore(score: string | number | null | undefined) {
 }
 
 export function scoreVerdict(score: number) {
-  if (score >= 4.5) return "编辑精选";
-  if (score >= 4) return "值得留下";
-  if (score >= 3) return "入选档案";
-  return "未入选";
+  if (score >= 4.5) return "编辑心头好";
+  if (score >= 4) return "很打动我们";
+  if (score >= 3) return "放进档案";
+  return "先留给你";
 }
 
 export function padIndex(value: number, length = 2) {

@@ -1,11 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { and, eq, lt, sql } from "drizzle-orm";
-import { getLens } from "@/lib/camera-presets";
 import { getTheme } from "@/lib/constants";
 import type { PhotoUploadInput } from "@/lib/validation";
 import { evaluatePhoto } from "@/server/ai/evaluator";
 import { db } from "@/server/db";
-import { cameras, likes, photos, user } from "@/server/db/schema";
+import { likes, photos, user } from "@/server/db/schema";
 import { prepareModelImage, preparePhoto } from "@/server/media/process";
 import {
   deleteMedia,
@@ -39,23 +38,9 @@ export async function createPhoto(input: {
   userId: string;
   fileBuffer: Buffer;
   fields: PhotoUploadInput;
-  cameraId?: string | null;
 }) {
   const { userId, fileBuffer, fields } = input;
   const photoId = randomUUID();
-
-  let camera = null;
-  if (fields.cameraId) {
-    const [found] = await db
-      .select()
-      .from(cameras)
-      .where(and(eq(cameras.id, fields.cameraId), eq(cameras.userId, userId)))
-      .limit(1);
-    if (!found) {
-      throw new PhotoServiceError(404, "camera_not_found", "没有找到这台相机");
-    }
-    camera = found;
-  }
 
   let prepared;
   try {
@@ -66,7 +51,6 @@ export async function createPhoto(input: {
   }
 
   const takenAt = parseTakenAt(fields.takenAt) ?? prepared.exif.takenAt;
-  const lens = camera ? getLens(camera.lens) : null;
 
   try {
     const [photo] = await db
@@ -74,7 +58,6 @@ export async function createPhoto(input: {
       .values({
         id: photoId,
         userId,
-        cameraId: camera?.id ?? null,
         title: fields.title,
         caption: fields.caption || null,
         theme: fields.theme,
@@ -84,19 +67,19 @@ export async function createPhoto(input: {
         locationName: fields.locationName || null,
         latitude: prepared.exif.latitude,
         longitude: prepared.exif.longitude,
-        cameraModel: camera ? `GOHIKING FIELD / ${camera.name}` : prepared.exif.cameraModel,
-        lensModel: lens ? `${lens.name} · ${lens.focal}` : prepared.exif.lensModel,
+        cameraModel: prepared.exif.cameraModel,
+        lensModel: prepared.exif.lensModel,
         aperture: prepared.exif.aperture,
         shutterSpeed: prepared.exif.shutterSpeed,
         iso: prepared.exif.iso,
-        focalLength: lens?.focal ?? prepared.exif.focalLength,
+        focalLength: prepared.exif.focalLength,
         width: prepared.width,
         height: prepared.height,
         fileKey: prepared.displayKey,
         thumbKey: prepared.thumbKey,
         blurData: prepared.blurData,
         dominantColor: prepared.dominantColor,
-        source: camera ? "camera" : fields.source,
+        source: fields.source,
       })
       .returning();
 
@@ -124,7 +107,7 @@ async function loadPhotoForEvaluation(photoId: string, userId: string) {
     throw new PhotoServiceError(404, "not_found", "没有找到这张照片");
   }
   if (row.photo.userId !== userId) {
-    throw new PhotoServiceError(403, "forbidden", "你没有权限评审这张照片");
+    throw new PhotoServiceError(403, "forbidden", "这张照片现在只属于它的拍摄者");
   }
   return row;
 }
@@ -135,7 +118,7 @@ export async function evaluateAndFinalize(photoId: string, userId: string): Prom
   latencyMs: number;
 }> {
   if (evaluationsInFlight.has(photoId)) {
-    throw new PhotoServiceError(409, "already_evaluating", "这张照片正在评审中，请稍候");
+    throw new PhotoServiceError(409, "already_evaluating", "这张照片正在被认真观看，稍等一下");
   }
 
   const { photo, author } = await loadPhotoForEvaluation(photoId, userId);
@@ -148,7 +131,7 @@ export async function evaluateAndFinalize(photoId: string, userId: string): Prom
     };
   }
   if (photo.status === "rejected") {
-    throw new PhotoServiceError(409, "already_finished", "这张照片已经完成评审");
+    throw new PhotoServiceError(409, "already_finished", "这张照片已经有一份手记了");
   }
   if (!photo.fileKey) {
     throw new PhotoServiceError(422, "missing_file", "照片文件缺失，请重新上传");
@@ -249,7 +232,7 @@ export async function evaluateAndFinalize(photoId: string, userId: string): Prom
     }
 
     if (!updated) {
-      throw new PhotoServiceError(500, "finalize_failed", "无法保存评审结果");
+      throw new PhotoServiceError(500, "finalize_failed", "手记暂时没有存好，请再试一次");
     }
 
     return {
@@ -295,7 +278,7 @@ export async function retryFailedPhoto(photoId: string, userId: string) {
     .limit(1);
   if (!photo) throw new PhotoServiceError(404, "not_found", "没有找到这张照片");
   if (photo.status !== "failed" && photo.status !== "evaluating") {
-    throw new PhotoServiceError(409, "not_retryable", "这张照片无法重新评审");
+    throw new PhotoServiceError(409, "not_retryable", "这张照片现在不需要重新观看");
   }
   await db.update(photos).set({ status: "evaluating" }).where(eq(photos.id, photoId));
   return evaluateAndFinalize(photoId, userId);

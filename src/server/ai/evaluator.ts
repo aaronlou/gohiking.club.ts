@@ -61,7 +61,7 @@ function resolveProvider(): Provider {
     if (!apiKey || !model) {
       throw new AIServiceError(
         "not_configured",
-        "视觉评审服务尚未配置。请在服务端设置 AI_API_KEY 与 AI_MODEL。",
+        "负责观看照片的模型还没有准备好。请稍后再试，或联系站点管理员。",
       );
     }
     return {
@@ -90,18 +90,18 @@ function resolveProvider(): Provider {
 
 function apiErrorForStatus(status: number, detail: string) {
   if (status === 401 || status === 403) {
-    return new AIServiceError("unauthorized", "视觉评审服务的访问凭证无效，请联系站点管理员。");
+    return new AIServiceError("unauthorized", "观看照片的模型暂时没有通过身份验证，请联系站点管理员。");
   }
   if (status === 404) {
     return new AIServiceError(
       "model_missing",
-      "视觉评审模型尚未就绪。请确认 Ollama 模型已经下载，或检查 AI_MODEL 配置。",
+      "观看照片的模型还没有准备好。请稍后再试，或检查模型配置。",
       detail,
     );
   }
   return new AIServiceError(
     "unavailable",
-    "视觉评审服务暂时没有响应，请稍后重试。",
+    "观看照片的模型暂时没有回应，稍后再试一次吧。",
     detail,
   );
 }
@@ -147,7 +147,7 @@ async function callOllama(
   if (!payload.message?.content) {
     throw new AIServiceError(
       "invalid_response",
-      "评审模型返回了空结果，请重试。",
+      "这一次，模型没有留下手记。稍后再试一次吧。",
       payload.error ?? payload,
     );
   }
@@ -203,7 +203,7 @@ async function callOpenAI(
 
   const content = payload.choices?.[0]?.message?.content;
   if (!content) {
-    throw new AIServiceError("invalid_response", "评审模型返回了空结果，请重试。", payload);
+    throw new AIServiceError("invalid_response", "这一次，模型没有留下手记。稍后再试一次吧。", payload);
   }
 
   return content;
@@ -229,13 +229,13 @@ export async function evaluatePhoto(
   } catch (error) {
     if (error instanceof AIServiceError) throw error;
     if (error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError")) {
-      throw new AIServiceError("timeout", "评审用时过长，照片已安全保留，请稍后重试。", error);
+      throw new AIServiceError("timeout", "观看用时有点长，照片好好地保留着，稍后再试一次吧。", error);
     }
     throw new AIServiceError(
       "unavailable",
       provider.kind === "ollama"
-        ? "无法连接本地视觉模型。请确认 Ollama 正在运行，并已下载指定模型。"
-        : "无法连接视觉评审服务，请稍后重试。",
+        ? "暂时连不上观看照片的模型。请确认 Ollama 正在运行，并已下载指定模型。"
+        : "暂时连不上观看照片的模型，稍后再试一次吧。",
       error,
     );
   }
@@ -244,7 +244,7 @@ export async function evaluatePhoto(
   try {
     parsed = extractJsonObject(content);
   } catch (error) {
-    throw new AIServiceError("invalid_response", "评审结果格式异常，请重试一次。", {
+    throw new AIServiceError("invalid_response", "这一次的手记没有写完，稍后再试一次吧。", {
       error,
       preview: content.slice(0, 300),
     });
@@ -252,7 +252,7 @@ export async function evaluatePhoto(
 
   const validated = rawEvaluationSchema.safeParse(parsed);
   if (!validated.success) {
-    throw new AIServiceError("invalid_response", "评审结果缺少必要信息，请重试一次。", {
+    throw new AIServiceError("invalid_response", "这一次的手记少了一点信息，稍后再试一次吧。", {
       issues: validated.error.issues,
       preview: content.slice(0, 300),
     });
@@ -278,13 +278,13 @@ export function describeProvider() {
   if (requested === "openai") {
     return {
       id: "openai" as const,
-      label: "云端视觉评审",
+      label: "云端观看手记",
       model: process.env.AI_MODEL ?? "未配置",
     };
   }
   return {
     id: "ollama" as const,
-    label: "本地视觉评审",
+    label: "本地观看手记",
     model: process.env.OLLAMA_MODEL ?? "qwen3.5:9b",
   };
 }

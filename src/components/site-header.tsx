@@ -15,13 +15,11 @@ type HeaderUser = {
 const navItems = [
   { href: "/archive", label: "影像档案", latin: "ARCHIVE" },
   { href: "/#this-week", label: "本期山脊", latin: "SELECTS" },
-  { href: "/camera", label: "相机工坊", latin: "CAMERA" },
-  { href: "/#standard", label: "评审标准", latin: "STANDARD" },
+  { href: "/#standard", label: "如何观看", latin: "HOW WE LOOK" },
 ];
 
 export function SiteHeader({ user }: { user: HeaderUser }) {
   const pathname = usePathname();
-  const isDarkPage = pathname?.startsWith("/camera");
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -48,7 +46,6 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
       <header className={cn(
           "site-header",
           scrolled && "is-scrolled",
-          isDarkPage && "is-dark-page",
           open && "is-menu-open",
         )}>
         <div className="site-header__inner">
@@ -76,7 +73,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
           <div className="site-header__actions">
             <Link href={uploadHref} className="btn btn--ink btn--sm header-upload">
               <UploadIcon />
-              <span>提交照片</span>
+              <span>放进照片</span>
             </Link>
             {user ? (
               <Link href="/studio" className="header-user" aria-label={`进入 ${user.name} 的工作室`}>

@@ -45,7 +45,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     }
     console.error("[evaluate] failed", error);
     return NextResponse.json(
-      { error: "评审过程出现问题，照片仍安全保留，请重试。", code: "evaluate_failed", retryable: true },
+      { error: "这次观看还没有完成，照片好好地保留着，稍后再试一次吧。", code: "evaluate_failed", retryable: true },
       { status: 500 },
     );
   }

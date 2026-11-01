@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { CameraIllustration } from "@/components/camera/camera-illustration";
 import { ContourField } from "@/components/contour-field";
-import { ArrowDown, ArrowRight, ArrowUpRight, CameraIcon, UploadIcon } from "@/components/icons";
+import { ArrowDown, ArrowRight, ArrowUpRight, UploadIcon } from "@/components/icons";
 import { PhotoGrid } from "@/components/photo-grid";
 import { SectionHeading } from "@/components/section-heading";
 import { PHOTO_THEMES, SCORE_RUBRIC, getTheme } from "@/lib/constants";
@@ -16,20 +15,9 @@ import {
 } from "@/server/photos/queries";
 
 export const metadata = {
-  title: "只留下值得背下山的照片",
+  title: "把走过的山野，好好收起来",
   description:
-    "为户外徒步者建立的影像档案馆。多模态 AI 认真观看每一张照片，只留下 3 分以上的山野影像，并按主题、时间与摄影师归档。",
-};
-
-const homeCamera = {
-  name: "山脊 35",
-  bodyColor: "moss",
-  accentColor: "#e96b40",
-  lens: "field-35",
-  filmStock: "pine-400",
-  strap: "canvas",
-  engraving: "FIELD NOTES · 2026",
-  serial: "GH·26·FIELD",
+    "为户外徒步者建立的影像档案馆。每一张照片都会被认真看见，并留下一份温柔、具体的中文手记。",
 };
 
 export default async function HomePage() {
@@ -62,9 +50,10 @@ export default async function HomePage() {
     return (
       <section className="empty-home shell">
         <p className="eyebrow">GOHIKING.CLUB</p>
-        <h1>山行档案正在等待第一张照片。</h1>
+        <h1>山行档案，正在等第一张山野。</h1>
+        <p>不急着拍得完美。先把那一次出发带回来，我们会认真看。</p>
         <Link href={uploadHref} className="btn btn--ink">
-          成为第一位提交者
+          放进第一张照片
           <ArrowUpRight />
         </Link>
       </section>
@@ -79,59 +68,65 @@ export default async function HomePage() {
           <div className="hero__copy">
             <p className="eyebrow hero__eyebrow">
               <span className="dot" />
-              A FIELD ARCHIVE FOR HIKERS · EST. 2026
+              A GENTLE ARCHIVE FOR HIKERS · EST. 2026
             </p>
             <h1 className="hero__title">
-              <span>只留下</span>
+              <span>把走过的</span>
               <span>
-                <em>值得背下山</em>
+                <em>山野</em>，好好
               </span>
-              <span>的照片。</span>
+              <span>收起来。</span>
             </h1>
             <p className="hero__lede">
-              山野不生产照片，它只提供光线、风和等待。我们为徒步者保管那些真正发生的瞬间——
-              先经过一次认真的观看，再被放进档案。
+              山野不生产照片，它只把光、风和等待交给你。你带回的那一张，也许不完美，
+              却有你走过的证据。我们愿意替你认真看一看，再好好收起来。
             </p>
             <div className="hero__actions">
               <Link href={uploadHref} className="btn btn--ink">
                 <UploadIcon />
-                提交一张照片
+                放进一张照片
               </Link>
               <Link href="/archive" className="text-link">
-                浏览完整影像档案
+                去看看山野档案
                 <ArrowRight />
               </Link>
             </div>
             <dl className="hero__stats">
               <div>
-                <dt>入选影像</dt>
+                <dt>公共影像</dt>
                 <dd>{stats.accepted || photos.length}</dd>
               </div>
               <div>
-                <dt>徒步摄影师</dt>
+                <dt>同行摄影师</dt>
                 <dd>{stats.photographers}</dd>
               </div>
               <div>
-                <dt>平均评分</dt>
+                <dt>平均手记分</dt>
                 <dd>{stats.averageScore ? stats.averageScore.toFixed(1) : "—"}</dd>
               </div>
               <div>
-                <dt>视觉评审</dt>
-                <dd className="hero__stat-word">每张都有理由</dd>
+                <dt>观看方式</dt>
+                <dd className="hero__stat-word">每一张都被看见</dd>
               </div>
             </dl>
           </div>
 
           <div className="hero__visual">
             <div className="hero__stamp" aria-hidden>
-              <span>入选</span>
+              <span>放进</span>
               <strong>{formatScore(heroPhoto.score)}</strong>
               <span>/ 5</span>
               <i>FIELD SELECT</i>
             </div>
 
             <figure className="hero-photo hero-photo--main">
-              <img src={heroPhoto.imageUrl} alt={heroPhoto.title} fetchPriority="high" />
+              <img
+                src={heroPhoto.imageUrl}
+                srcSet={`${heroPhoto.thumbUrl} 720w, ${heroPhoto.imageUrl} 2200w`}
+                sizes="(max-width: 760px) 78vw, 40vw"
+                alt={heroPhoto.title}
+                fetchPriority="high"
+              />
               <figcaption>
                 <span>NO. {heroPhoto.id.slice(-3).toUpperCase()}</span>
                 <span>{getTheme(heroPhoto.theme).latin}</span>
@@ -140,7 +135,13 @@ export default async function HomePage() {
 
             {insetPhoto && (
               <figure className="hero-photo hero-photo--inset">
-                <img src={insetPhoto.imageUrl} alt={insetPhoto.title} />
+                <img
+                  src={insetPhoto.imageUrl}
+                  srcSet={`${insetPhoto.thumbUrl} 720w, ${insetPhoto.imageUrl} 2200w`}
+                  sizes="(max-width: 760px) 48vw, 22vw"
+                  alt={insetPhoto.title}
+                  loading="lazy"
+                />
                 <figcaption>
                   <span>{insetPhoto.title}</span>
                   <span>{insetPhoto.locationName}</span>
@@ -150,7 +151,7 @@ export default async function HomePage() {
 
             <div className="hero__caption">
               <div>
-                <span className="hero__caption-label">CURRENT SELECT</span>
+                <span className="hero__caption-label">THIS WEEK / 本周看见</span>
                 <strong>{heroPhoto.title}</strong>
               </div>
               <div>
@@ -175,7 +176,7 @@ export default async function HomePage() {
           </a>
           <p>
             {provider.label} · {provider.model}
-            <span> / 3.0 分入选线 / 低分照片 24 小时后清理</span>
+            <span> / 3.0 分进入公共档案 / 暂存照片 24 小时后自动删除</span>
           </p>
         </div>
       </section>
@@ -192,9 +193,9 @@ export default async function HomePage() {
               <i />
               <span>山野 WILD</span>
               <i />
-              <span>真实 REAL</span>
+              <span>被看见 SEEN</span>
               <i />
-              <span>克制 RESTRAINT</span>
+              <span>真诚 HONEST</span>
               <i />
             </div>
           ))}
@@ -236,7 +237,7 @@ export default async function HomePage() {
         <div className="week-section__foot">
           <p>
             <span className="mono">ARCHIVE NOTE</span>
-            每张照片都保留完整的评审手记。分数不是终点，它只是一次更认真观看的开始。
+            每张照片都保留完整的观看手记。分数不是终点，它只是一次更认真看见的开始。
           </p>
           <Link href="/archive" className="btn btn--outline">
             进入完整档案
@@ -246,7 +247,17 @@ export default async function HomePage() {
       </section>
 
       <section className="quote-section" style={{ backgroundColor: quotePhoto?.dominantColor ?? "#2b342b" }}>
-        {quotePhoto && <img src={quotePhoto.imageUrl} alt="" aria-hidden className="quote-section__bg" />}
+        {quotePhoto && (
+          <img
+            src={quotePhoto.imageUrl}
+            srcSet={`${quotePhoto.thumbUrl} 720w, ${quotePhoto.imageUrl} 2200w`}
+            sizes="100vw"
+            alt=""
+            aria-hidden
+            loading="lazy"
+            className="quote-section__bg"
+          />
+        )}
         <div className="quote-section__veil" />
         <div className="quote-section__inner shell">
           <p className="eyebrow eyebrow--light">
@@ -272,21 +283,21 @@ export default async function HomePage() {
           <div className="standard-section__intro">
             <SectionHeading
               index="02"
-              kicker="THE STANDARD / 评审标准"
+              kicker="THE WAY WE LOOK / 我们如何观看"
               title={
                 <>
-                  不是所有照片，
+                  一张照片，
                   <br className="only-mobile" />
-                  都值得一直占着位置。
+                  值得被认真看完。
                 </>
               }
-              description="我们使用多模态视觉模型，从四个维度观看一张照片。满分 5 分，3 分是档案的入选线。低于 3 分不是羞辱，而是一次关于「下一步怎么拍」的诚实反馈。"
+              description="我们请多模态视觉模型从光影、构图、山野叙事与独特观看四个维度阅读一张照片。5 分是满分，3 分是进入公共档案的邀请线，而不是对照片价值的判决。暂时没到 3 分的照片，也会收到具体、温柔的手记。"
               light
             />
-            <div className="score-scale" aria-label="评分标准：3 分入选，5 分满分">
+            <div className="score-scale" aria-label="评分参考：3 分进入公共档案，5 分满分">
               <div className="score-scale__labels">
                 <span>1.0</span>
-                <span>3.0 入选线</span>
+                <span>3.0 公共档案</span>
                 <span>5.0</span>
               </div>
               <div className="score-scale__bar">
@@ -295,14 +306,14 @@ export default async function HomePage() {
                 <i />
               </div>
               <div className="score-scale__notes">
-                <span>截图 / 失焦 / 无山野语境</span>
-                <span>真诚的记录</span>
-                <span>值得被记住</span>
+                <span>还需要一点时间</span>
+                <span>诚实的记录</span>
+                <span>愿意再想起</span>
               </div>
             </div>
             <p className="standard-section__small">
-              低分照片会收到具体原因，并在隔离区保留 24 小时供你查看，之后自动清理。
-              我们尽量不长期保存不值得留下的影像。
+              还没到 3 分的照片不会被公开，也不会被否定。我们会在 24 小时内保留它，
+              供你读完手记，然后自动移除原图与预览。
             </p>
           </div>
           <div className="rubric-list">
@@ -316,44 +327,6 @@ export default async function HomePage() {
                 <p>{item.description}</p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="camera-teaser shell">
-        <div className="camera-teaser__copy">
-          <p className="eyebrow">
-            <span className="dot" />
-            03 / FIELD CAMERA WORKSHOP
-          </p>
-          <h2>
-            造一台
-            <br />
-            只属于你的
-            <br />
-            <em>电子相机。</em>
-          </h2>
-          <p>
-            选择机身、镜头与胶片配方，刻上只有你知道的那句话。它会得到独一无二的序列号，
-            也可以直接打开取景器，拍下下一段路。
-          </p>
-          <div className="camera-teaser__specs">
-            <span>05 种机身</span>
-            <span>03 支镜头</span>
-            <span>05 款胶片</span>
-            <span>无限种你的山</span>
-          </div>
-          <Link href="/camera" className="btn btn--signal">
-            <CameraIcon />
-            进入相机工坊
-          </Link>
-        </div>
-        <div className="camera-teaser__visual">
-          <span className="camera-teaser__vertical">DIGITAL FIELD CAMERA / ONE OF ONE</span>
-          <CameraIllustration design={homeCamera} className="camera-object--teaser" />
-          <div className="camera-teaser__caption">
-            <span>GH·26·FIELD</span>
-            <span>35mm · f/2.0 · PINE 400</span>
           </div>
         </div>
       </section>
@@ -372,7 +345,7 @@ export default async function HomePage() {
           <div className="closing-section__actions">
             <Link href={uploadHref} className="btn btn--ink">
               <UploadIcon />
-              提交一张照片
+              放进一张照片
             </Link>
             <Link href="/register" className="text-link">
               成为档案成员
