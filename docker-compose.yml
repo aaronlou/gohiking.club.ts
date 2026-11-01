@@ -1,0 +1,75 @@
+name: gohiking
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: gohiking
+      POSTGRES_USER: gohiking
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gohiking}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gohiking -d gohiking"]
+      interval: 5s
+      timeout: 4s
+      retries: 15
+      start_period: 5s
+
+  app:
+    build:
+      context: .
+      target: runner
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      APP_NAME: ${APP_NAME:-山行档案}
+      APP_URL: ${APP_URL:-http://localhost:3000}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET in .env}
+      AUTH_SECURE_COOKIES: ${AUTH_SECURE_COOKIES:-false}
+      DATABASE_URL: postgresql://gohiking:${POSTGRES_PASSWORD:-gohiking}@db:5432/gohiking
+      MEDIA_ROOT: /data/media
+      REJECTED_RETENTION_HOURS: ${REJECTED_RETENTION_HOURS:-24}
+      UPLOAD_MAX_MB: ${UPLOAD_MAX_MB:-30}
+      UPLOADS_PER_HOUR: ${UPLOADS_PER_HOUR:-12}
+      AI_PROVIDER: ${AI_PROVIDER:-ollama}
+      OLLAMA_URL: ${DOCKER_OLLAMA_URL:-http://host.docker.internal:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen3.5:9b}
+      AI_BASE_URL: ${AI_BASE_URL:-}
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_MODEL: ${AI_MODEL:-}
+      AI_TIMEOUT_MS: ${AI_TIMEOUT_MS:-180000}
+      CRON_SECRET: ${CRON_SECRET:-}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - media:/data/media
+
+  # Optional one-shot demo data: docker compose --profile seed run --rm seed
+  seed:
+    profiles: ["seed"]
+    build:
+      context: .
+      target: seeder
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      APP_URL: ${APP_URL:-http://localhost:3000}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET in .env}
+      DATABASE_URL: postgresql://gohiking:${POSTGRES_PASSWORD:-gohiking}@db:5432/gohiking
+      MEDIA_ROOT: /data/media
+    volumes:
+      - media:/data/media
+
+volumes:
+  pgdata:
+  media:

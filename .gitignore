@@ -1,0 +1,16 @@
+node_modules
+.next
+.env
+.env.local
+.env.*.local
+storage
+!.gitkeep
+.tmp
+.npm-cache
+*.tsbuildinfo
+next-env.d.ts
+coverage
+.DS_Store
+.gstack/
+
+.pnpm-store

@@ -1,0 +1,55 @@
+{
+  "name": "gohiking-club",
+  "version": "0.1.0",
+  "private": true,
+  "description": "山行档案 — a considered photo archive for hikers.",
+  "scripts": {
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "start": "next start --port 3000",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:seed": "tsx --env-file-if-exists=.env seed/seed.ts",
+    "db:studio": "drizzle-kit studio",
+    "setup:local": "pnpm db:migrate && pnpm db:seed",
+    "media:check": "tsx --env-file-if-exists=.env scripts/check-ai.ts",
+    "build:migrate": "esbuild docker/migrate.mjs --bundle --platform=node --format=cjs --outfile=docker/migrate.bundle.cjs --external:pg-native",
+    "docker:seed": "docker compose --profile seed run --rm seed"
+  },
+  "dependencies": {
+    "@fontsource-variable/instrument-sans": "5.3.0",
+    "@fontsource/dm-mono": "5.3.0",
+    "@fontsource/instrument-serif": "5.3.0",
+    "better-auth": "1.7.15",
+    "drizzle-orm": "0.45.4",
+    "exifr": "7.1.3",
+    "next": "16.4.3",
+    "pg": "8.23.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "sharp": "0.35.5",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/node": "26.6.6",
+    "@types/pg": "8.23.1",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "drizzle-kit": "0.31.11",
+    "playwright-core": "1.58.2",
+    "tailwindcss": "4.3.3",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3",
+    "vitest": "5.0.5",
+    "esbuild": "0.28.2"
+  },
+  "packageManager": "pnpm@10.32.1",
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

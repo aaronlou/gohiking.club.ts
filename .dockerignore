@@ -1,0 +1,17 @@
+node_modules
+.next
+.git
+.github
+.env
+.env.*
+!.env.example
+!.env.docker.example
+storage
+.tmp
+.npm-cache
+coverage
+*.log
+.gitignore
+Dockerfile
+docker-compose.yml
+.pnpm-store
