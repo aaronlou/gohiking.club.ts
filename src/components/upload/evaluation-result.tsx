@@ -18,11 +18,13 @@ export function EvaluationResult({
   accepted,
   latencyMs,
   onAgain,
+  activity = null,
 }: {
   photo: PhotoDto;
   accepted: boolean;
   latencyMs: number;
   onAgain: () => void;
+  activity?: { title: string } | null;
 }) {
   const router = useRouter();
   const score = photo.score ?? 0;
@@ -54,7 +56,9 @@ export function EvaluationResult({
           <span className="eyebrow">
             <span className="dot" />
             {accepted
-              ? "A PLACE IN THE ARCHIVE / 已放进公共档案"
+              ? activity
+                ? "A PLACE IN THE FIELD ROLL / 已放进活动相册"
+                : "A PLACE IN THE ARCHIVE / 已放进公共档案"
               : "A LITTLE MORE LIGHT / 这次还差一点"}
           </span>
           <span className="mono">
@@ -66,10 +70,24 @@ export function EvaluationResult({
 
         <h2>
           {accepted ? (
+            activity ? (
+              <>
+                这张照片，
+                <br />
+                <em>已经放进这次同行。</em>
+              </>
+            ) : (
+              <>
+                这张照片，
+                <br />
+                <em>我们想替你留下。</em>
+              </>
+            )
+          ) : activity ? (
             <>
-              这张照片，
+              这次没有入选，
               <br />
-              <em>我们想替你留下。</em>
+              <em>但这一趟没有白拍。</em>
             </>
           ) : (
             <>
@@ -153,7 +171,7 @@ export function EvaluationResult({
             </button>
             <span className="result-panel__saved">
               <CheckIcon />
-              已与大家见面
+              {activity ? "只对同行者可见" : "已与大家见面"}
             </span>
           </div>
         ) : (

@@ -52,7 +52,7 @@ type BatchItem = {
   error?: string;
 };
 
-type Stage = "compose" | "uploading" | "evaluating" | "done" | "stored";
+type Stage = "compose" | "uploading" | "evaluating" | "done";
 
 function titleFromFile(name: string) {
   const base = name
@@ -241,11 +241,6 @@ export function BatchUpload({ activity = null }: { activity?: ActivityContext })
       }
     });
 
-    if (activity) {
-      setStage("stored");
-      return;
-    }
-
     setStage("evaluating");
     const uploaded = working.filter(
       (item) => item.photoId && item.status !== "error",
@@ -274,15 +269,8 @@ export function BatchUpload({ activity = null }: { activity?: ActivityContext })
     setStage("done");
   }
 
-  if (stage === "done" || stage === "stored") {
-    return (
-      <BatchResult
-        items={items}
-        activity={activity}
-        onAgain={reset}
-        stage={stage}
-      />
-    );
+  if (stage === "done") {
+    return <BatchResult items={items} activity={activity} onAgain={reset} />;
   }
 
   if (stage === "uploading" || stage === "evaluating") {
@@ -568,7 +556,7 @@ export function BatchUpload({ activity = null }: { activity?: ActivityContext })
           </button>
           <p>
             {activity
-              ? "照片会直接进入活动相册，只对同行者可见，不等待观看。"
+              ? "3 分以上会进入活动相册，只对同行者可见；没到 3 分不会保存，但会收到具体建议。"
               : "3 分以上会与大家见面；没到 3 分不会保存，但会收到具体建议。"}
           </p>
         </div>
@@ -630,18 +618,15 @@ function BatchResult({
   items,
   activity,
   onAgain,
-  stage,
 }: {
   items: BatchItem[];
   activity: ActivityContext;
   onAgain: () => void;
-  stage: "done" | "stored";
 }) {
   const accepted = items.filter((item) => item.status === "accepted");
   const rejected = items.filter((item) => item.status === "rejected");
-  const stored = items.filter((item) => item.status === "stored");
   const failed = items.filter((item) => item.status === "error");
-  const done = accepted.length + rejected.length + stored.length;
+  const done = accepted.length + rejected.length;
 
   return (
     <div className="batch-result">
@@ -651,23 +636,13 @@ function BatchResult({
           {activity ? "IN THE FIELD ROLL / 已放进活动" : "THE LOOK / 这一批的结果"}
         </p>
         <h2>
-          {activity ? (
-            <>
-              {stored.length} 张，
-              <br />
-              <em>已经放进这次同行。</em>
-            </>
-          ) : (
-            <>
-              {accepted.length} 张留下，
-              <br />
-              <em>还有 {rejected.length + failed.length} 张，留给下一次。</em>
-            </>
-          )}
+          {accepted.length} 张入选，
+          <br />
+          <em>还有 {rejected.length + failed.length} 张，留给下一次。</em>
         </h2>
         <p className="batch-result__lead">
           {activity
-            ? "这些照片只对活动里的同行者可见，不会自动公开到公共档案。"
+            ? `3 分以上已经进入《${activity.title}》的相册，只对同行者可见。没到 3 分的照片不会被保存，但每一张的建议都留在这里。`
             : rejected.length > 0
               ? "没到 3 分的照片不会被保存，但每一张的建议都留在这里。带上它们，再去拍一张。"
               : "每一张照片都被认真看过。想公开的，已经和山野见面了。"}
@@ -676,7 +651,16 @@ function BatchResult({
           <span>
             <strong>{done}</strong> 张完成
           </span>
-          {!activity && (
+          {activity ? (
+            <>
+              <span>
+                <strong>{accepted.length}</strong> 张进入活动相册
+              </span>
+              <span>
+                <strong>{rejected.length}</strong> 张未达邀请线
+              </span>
+            </>
+          ) : (
             <>
               <span>
                 <strong>{accepted.length}</strong> 张进入公共档案
@@ -704,9 +688,7 @@ function BatchResult({
           const title = result?.title ?? item.photo?.title ?? item.title;
           const score = result?.score ?? item.photo?.score ?? null;
           const href =
-            item.status === "accepted" || item.status === "stored"
-              ? `/photo/${item.photoId}`
-              : null;
+            item.status === "accepted" ? `/photo/${item.photoId}` : null;
 
           return (
             <article className={`batch-card status-${item.status}`} key={item.id}>
@@ -718,7 +700,11 @@ function BatchResult({
                 ) : (
                   <img src={image} alt={title} />
                 )}
-                <span className="batch-card__badge">{statusLabel(item)}</span>
+                <span className="batch-card__badge">
+                  {activity && item.status === "accepted"
+                    ? "已入选"
+                    : statusLabel(item)}
+                </span>
                 {score !== null && (
                   <span className="batch-card__score">{formatScore(score)}</span>
                 )}
@@ -776,11 +762,6 @@ function BatchResult({
         </Link>
       </div>
 
-      {stage === "stored" && (
-        <p className="batch-result__foot">
-          这一批已经收进活动相册，只有同行者能看到。
-        </p>
-      )}
     </div>
   );
 }

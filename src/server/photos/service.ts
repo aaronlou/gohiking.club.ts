@@ -64,7 +64,7 @@ export async function createPhoto(input: {
         activityId,
         theme: fields.theme,
         visibility: "activity",
-        status: "unrated",
+        status: "evaluating",
         takenAt,
         locationName: fields.locationName || null,
         latitude: prepared.exif.latitude,
@@ -238,22 +238,10 @@ export async function evaluateAndFinalize(
 
       await deleteMedia([photoMediaKey("quarantine", photoId, "blur")]);
       await deletePhotoDirectory("quarantine", photoId).catch(() => undefined);
-    } else if (photo.activityId) {
-      // Activity photos are never deleted because of a score. The handnote is
-      // kept for the photographer, and the photo stays in the private roll.
-      [updated] = await db
-        .update(photos)
-        .set({
-          ...common,
-          status: "rejected",
-          expiresAt: null,
-        })
-        .where(eq(photos.id, photoId))
-        .returning();
     } else {
-      // A standalone photo below the invitation line is not kept at all. Build
-      // the handnote first, then remove the file and the row so nothing is
-      // silently stored after the user has seen the result.
+      // Below the invitation line the photo is not kept at all — not even
+      // inside an activity. Build the handnote first, then remove the file and
+      // the row so nothing is silently stored after the result is shown.
       const rejectedPhoto = {
         ...photo,
         ...common,
@@ -265,6 +253,9 @@ export async function evaluateAndFinalize(
       await deletePhotoDirectory("quarantine", photoId).catch((error) => {
         console.error(`[reject] could not remove media ${photoId}`, error);
       });
+      await deletePhotoDirectory("photos", photoId).catch((error) => {
+        console.error(`[reject] could not remove media ${photoId}`, error);
+      });
       await db
         .delete(photos)
         .where(eq(photos.id, photoId))
@@ -273,7 +264,7 @@ export async function evaluateAndFinalize(
         });
 
       console.info(
-        `[reject] standalone photo removed id=${photoId} score=${evaluation.score}`,
+        `[reject] photo removed id=${photoId} score=${evaluation.score}`,
       );
 
       return { photo: dto, accepted: false, latencyMs: evaluation.latencyMs };
@@ -376,12 +367,12 @@ export async function getPhotoRecord(photoId: string) {
 
 export async function cleanupExpiredMedia() {
   const now = new Date();
-  // Standalone photos are no longer held after a rejection; this also sweeps
-  // any legacy rows created before the rule changed.
+  // Rejected photos are no longer held anywhere; this also sweeps legacy rows
+  // created before the upload-time scoring rule.
   const expired = await db
     .select({ id: photos.id })
     .from(photos)
-    .where(and(eq(photos.status, "rejected"), isNull(photos.activityId)))
+    .where(eq(photos.status, "rejected"))
     .limit(50);
 
   for (const photo of expired) {

@@ -39,6 +39,7 @@ async function countPhotos(activityId: string) {
     .where(
       and(
         eq(photos.activityId, activityId),
+        eq(photos.status, "accepted"),
         inArray(photos.visibility, ["activity", "public"]),
       ),
     );
@@ -82,6 +83,7 @@ export async function listActivityPhotos(
     .where(
       and(
         eq(photos.activityId, activity.id),
+        eq(photos.status, "accepted"),
         inArray(photos.visibility, ["activity", "public"]),
       ),
     )
@@ -98,7 +100,7 @@ export async function listPublicActivities(): Promise<ActivityDto[]> {
       activity: activities,
       host: user,
       memberCount: sql<number>`(select count(*)::int from ${activityMembers} where ${activityMembers.activityId} = ${activities.id} and ${activityMembers.status} = 'approved')`,
-      photoCount: sql<number>`(select count(*)::int from ${photos} where ${photos.activityId} = ${activities.id} and ${photos.visibility} in ('activity', 'public'))`,
+      photoCount: sql<number>`(select count(*)::int from ${photos} where ${photos.activityId} = ${activities.id} and ${photos.status} = 'accepted' and ${photos.visibility} in ('activity', 'public'))`,
     })
     .from(activities)
     .innerJoin(user, eq(activities.hostId, user.id))

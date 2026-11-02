@@ -137,12 +137,6 @@ export function UploadStudio({ activity = null }: { activity?: ActivityContext }
     try {
       const uploaded = await uploadPhotoWithProgress(formData, setProgress);
       setPhotoId(uploaded.photo.id);
-      if (activity) {
-        setStoredPhoto(uploaded.photo);
-        setStage("stored");
-        window.scrollTo({ top: 0, behavior: "smooth" });
-        return;
-      }
       setStage("evaluating");
       const evaluated = await evaluatePhotoRequest(uploaded.photo.id);
       if (!evaluated.accepted && preview) {
@@ -251,6 +245,7 @@ export function UploadStudio({ activity = null }: { activity?: ActivityContext }
           accepted={result.accepted}
           latencyMs={result.latencyMs}
           onAgain={reset}
+          activity={activity ? { title: activity.title } : null}
         />
       </div>
     );
@@ -459,7 +454,7 @@ export function UploadStudio({ activity = null }: { activity?: ActivityContext }
 
         <p className="upload-compose__hint">
           {activity
-            ? "照片会直接进入活动相册，不会自动公开，也不用等待观看。"
+            ? "照片会逐张观看；3 分以上进入活动相册，只对同行者可见。"
             : "原图会先进入只给你看的临时区。主题、地点和可见性都可以之后再补。"}
         </p>
       </section>
@@ -594,7 +589,7 @@ export function UploadStudio({ activity = null }: { activity?: ActivityContext }
           </button>
           <p>
             {activity
-              ? "照片只对同行者可见。以后想公开某一张，再由你本人在照片页决定。"
+              ? "3 分以上会进入活动相册，只对同行者可见；没到 3 分不会保存，但会收到具体建议。"
               : "3.0 分以上会与大家见面；没到 3 分不会保存，但会收到具体、温柔的拍摄建议。"}
           </p>
         </div>

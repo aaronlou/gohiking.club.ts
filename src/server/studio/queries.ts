@@ -47,7 +47,7 @@ export async function getStudioOverview(userId: string): Promise<StudioOverview>
       host: user,
       role: activityMembers.role,
       memberCount: sql<number>`(select count(*)::int from ${activityMembers} where ${activityMembers.activityId} = ${activities.id} and ${activityMembers.status} = 'approved')`,
-      photoCount: sql<number>`(select count(*)::int from ${photos} where ${photos.activityId} = ${activities.id} and ${photos.visibility} in ('activity', 'public'))`,
+      photoCount: sql<number>`(select count(*)::int from ${photos} where ${photos.activityId} = ${activities.id} and ${photos.status} = 'accepted' and ${photos.visibility} in ('activity', 'public'))`,
     })
     .from(activityMembers)
     .innerJoin(activities, eq(activityMembers.activityId, activities.id))

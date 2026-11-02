@@ -29,8 +29,8 @@ export function UploadActivityGate({
               <em>同行的活动。</em>
             </h1>
             <p className="studio-head__note">
-              每一张照片都需要先归入一次徒步活动。选好之后，照片只会进入这次活动的相册，
-              只有同行者能看到；以后想公开时，再由你本人决定。
+              每一张照片都需要先归入一次徒步活动。选好之后，我们会逐张观看；
+              3 分以上进入这次活动的相册，没到的不会被保存。以后想公开，再由你本人决定。
             </p>
           </div>
           <div className="studio-head__actions">
