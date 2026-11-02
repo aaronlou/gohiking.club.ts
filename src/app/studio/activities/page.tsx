@@ -10,7 +10,7 @@ import { getHostPendingRequests, getMyActivities } from "@/server/activities/que
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "我的活动",
+  title: "活动管理",
   robots: { index: false, follow: false },
 };
 

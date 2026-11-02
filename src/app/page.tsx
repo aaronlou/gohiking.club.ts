@@ -87,7 +87,7 @@ export default async function HomePage() {
                 放进一张照片
               </Link>
               <Link href="/archive" className="text-link">
-                去看看山野档案
+                去看看公共档案
                 <ArrowRight />
               </Link>
             </div>
@@ -243,7 +243,7 @@ export default async function HomePage() {
             每张照片都保留完整的观看手记。分数不是终点，它只是一次更认真看见的开始。
           </p>
           <Link href="/archive" className="btn btn--outline">
-            进入完整档案
+            进入公共档案
             <ArrowUpRight />
           </Link>
         </div>

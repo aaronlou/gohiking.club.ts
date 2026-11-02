@@ -18,9 +18,28 @@ function publicPhotoCondition() {
   return and(eq(photos.status, "accepted"), eq(photos.visibility, "public"));
 }
 
-async function attachLikes(rows: { photo: typeof photos.$inferSelect; author: typeof user.$inferSelect }[], viewerId: Viewer) {
+type PhotoRow = {
+  photo: typeof photos.$inferSelect;
+  author: typeof user.$inferSelect;
+  activity?: typeof activities.$inferSelect | null;
+};
+
+async function attachLikes(rows: PhotoRow[], viewerId: Viewer) {
+  const toDto = ({ photo, author, activity }: PhotoRow, liked?: boolean) =>
+    toPhotoDto(photo, author, {
+      ...(liked === undefined ? {} : { liked }),
+      activity: activity
+        ? {
+            id: activity.id,
+            slug: activity.slug,
+            title: activity.title,
+            visibility: activity.visibility,
+          }
+        : null,
+    });
+
   if (!viewerId || rows.length === 0) {
-    return rows.map(({ photo, author }) => toPhotoDto(photo, author));
+    return rows.map((row) => toDto(row));
   }
   const liked = await db
     .select({ photoId: likes.photoId })
@@ -32,9 +51,7 @@ async function attachLikes(rows: { photo: typeof photos.$inferSelect; author: ty
       ),
     );
   const likedSet = new Set(liked.map((item) => item.photoId));
-  return rows.map(({ photo, author }) =>
-    toPhotoDto(photo, author, { liked: likedSet.has(photo.id) }),
-  );
+  return rows.map((row) => toDto(row, likedSet.has(row.photo.id)));
 }
 
 export async function getFeaturedPhotos(limit = 5, viewerId?: Viewer): Promise<PhotoDto[]> {
@@ -120,7 +137,12 @@ export async function getPhotoById(id: string, viewerId: Viewer): Promise<PhotoD
   return {
     ...dto,
     activity: row.activity
-      ? { id: row.activity.id, slug: row.activity.slug, title: row.activity.title }
+      ? {
+          id: row.activity.id,
+          slug: row.activity.slug,
+          title: row.activity.title,
+          visibility: row.activity.visibility,
+        }
       : null,
   };
 }
@@ -168,17 +190,15 @@ export async function getAuthorStats(userId: string) {
 
 export async function getStudioPhotos(userId: string): Promise<PhotoDto[]> {
   const rows = await db
-    .select({ photo: photos, author: user })
+    .select({ photo: photos, author: user, activity: activities })
     .from(photos)
     .innerJoin(user, eq(photos.userId, user.id))
+    .leftJoin(activities, eq(photos.activityId, activities.id))
     .where(eq(photos.userId, userId))
     .orderBy(desc(photos.createdAt))
-    .limit(80);
+    .limit(120);
 
-  return attachLikes(
-    rows.map((row) => ({ photo: row.photo, author: row.author })),
-    userId,
-  );
+  return attachLikes(rows, userId);
 }
 
 export async function getStudioStats(userId: string) {

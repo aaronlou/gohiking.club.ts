@@ -6,7 +6,7 @@ import { CompassIcon, GridIcon, PeopleIcon, UploadIcon } from "@/components/icon
 
 const links = [
   { href: "/studio", label: "我的档案", latin: "ARCHIVE", icon: GridIcon },
-  { href: "/studio/activities", label: "活动", latin: "WALKS", icon: CompassIcon },
+  { href: "/studio/activities", label: "活动管理", latin: "WALKS", icon: CompassIcon },
   { href: "/studio/upload", label: "放进照片", latin: "ADD", icon: UploadIcon },
   { href: "/studio/profile", label: "资料", latin: "PROFILE", icon: PeopleIcon },
 ];

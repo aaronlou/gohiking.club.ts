@@ -31,7 +31,7 @@ export default function NotFound() {
             <ArrowUpRight />
           </Link>
           <Link href="/archive" className="text-link">
-            浏览影像档案
+            浏览公共档案
             <ArrowDown />
           </Link>
         </div>

@@ -157,7 +157,7 @@ export default async function ActivityPage({ params }: { params: Promise<{ slug:
                   </h3>
                   <p>
                     通过发起人的确认之后，这里的相册、成员名单和集合点就会打开。
-                    照片不会自动公开到山野档案。
+                    照片不会自动公开到公共档案。
                   </p>
                 </div>
               </div>

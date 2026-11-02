@@ -15,8 +15,8 @@ import type { PhotoDto } from "@/server/photos/dto";
 import { getArchiveData } from "@/server/photos/queries";
 
 export const metadata: Metadata = {
-  title: "影像档案",
-  description: "按主题、月份与摄影师浏览山行档案里所有被认真看过的户外徒步影像。",
+  title: "公共档案",
+  description: "按主题、月份与摄影师浏览所有被认真看过的公共户外徒步影像。",
 };
 
 const tabs = [
@@ -38,7 +38,7 @@ function ArchiveHero({
   return (
     <header className="page-hero archive-hero">
       <div className="page-hero__top shell">
-        <span className="page-hero__crumb">INDEX 02 / ARCHIVE</span>
+        <span className="page-hero__crumb">INDEX 02 / PUBLIC ARCHIVE</span>
         <span className="page-hero__crumb">GOHIKING.CLUB · FIELD ARCHIVE</span>
       </div>
       <div className="page-hero__main shell">
@@ -48,7 +48,7 @@ function ArchiveHero({
             THE COMPLETE ARCHIVE / 被看见的全部影像
           </p>
           <h1>
-            影像<em>档案</em>
+            公共<em>档案</em>
           </h1>
         </div>
         <div className="page-hero__aside">

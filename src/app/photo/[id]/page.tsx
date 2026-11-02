@@ -29,7 +29,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const photo = await getPhotoById(id, null);
-  if (!photo) return { title: "影像档案" };
+  if (!photo) return { title: "公共档案" };
   return {
     title: photo.title,
     description: photo.summary ?? `${photo.author.name} 的山野影像。`,
@@ -59,6 +59,9 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
   const hasNote = photo.score !== null;
   const canSeeNote = (isPublic || isOwner) && hasNote;
   const score = photo.score ?? 0;
+  const activityLinkable = Boolean(
+    photo.activity && photo.activity.visibility !== "private",
+  );
 
   return (
     <article className="photo-page">
@@ -95,7 +98,7 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
       )}
 
       <div className="photo-page__crumb shell">
-        <Link href="/archive">影像档案</Link>
+        <Link href="/archive">公共档案</Link>
         <span>/</span>
         <span>{theme.label}</span>
         <span>/</span>
@@ -106,9 +109,18 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
           </span>
         )}
         {isActivityOnly && photo.activity && (
-          <Link href={`/activities/${photo.activity.slug}`} className="private-mark private-mark--activity">
-            <LockIcon /> 仅活动同行可见
-          </Link>
+          activityLinkable ? (
+            <Link
+              href={`/activities/${photo.activity.slug}`}
+              className="private-mark private-mark--activity"
+            >
+              <LockIcon /> 仅活动同行可见
+            </Link>
+          ) : (
+            <span className="private-mark private-mark--activity">
+              <LockIcon /> 仅活动同行可见
+            </span>
+          )
         )}
       </div>
 
@@ -124,12 +136,17 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
             <p>
               {photo.caption || "这张照片没有留下文字，但画面已经把当时的风说了一些。"}
             </p>
-            {photo.activity && (
-              <Link href={`/activities/${photo.activity.slug}`} className="photo-activity-link">
-                来自活动《{photo.activity.title}》
-                <ArrowUpRight />
-              </Link>
-            )}
+            {photo.activity &&
+              (activityLinkable ? (
+                <Link href={`/activities/${photo.activity.slug}`} className="photo-activity-link">
+                  来自活动《{photo.activity.title}》
+                  <ArrowUpRight />
+                </Link>
+              ) : (
+                <span className="photo-activity-link">
+                  来自活动《{photo.activity.title}》
+                </span>
+              ))}
             {photo.creditName && (
               <a
                 href={photo.creditUrl ?? "#"}
@@ -192,8 +209,8 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
                 <span className="mono">SHARED IN A FIELD ROLL</span>
                 <p>
                   {isOwner
-                    ? "这张照片还没有请山野看过。想公开到山野档案时，再点下面的按钮；在那之前，它只留在这次活动里。"
-                    : "这张照片来自一次同行。观看手记与分数只对拍摄者本人可见；想公开到山野档案，也由拍摄者自己决定。"}
+                    ? "这张照片还没有请山野看过。想公开到公共档案时，再点下面的按钮；在那之前，它只留在这次活动里。"
+                    : "这张照片来自一次同行。观看手记与分数只对拍摄者本人可见；想公开到公共档案，也由拍摄者自己决定。"}
                 </p>
               </div>
             )}

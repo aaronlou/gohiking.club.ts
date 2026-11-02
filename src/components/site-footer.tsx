@@ -21,7 +21,7 @@ export function SiteFooter() {
             <ArrowUpRight />
           </Link>
           <Link href="/archive" className="btn btn--outline-light">
-            去看看山野档案
+            去看看公共档案
             <ArrowUpRight />
           </Link>
         </div>
@@ -39,7 +39,7 @@ export function SiteFooter() {
         <div className="site-footer__col">
           <span className="footer-label">EXPLORE / 浏览</span>
           <Link href="/activities">活动</Link>
-          <Link href="/archive">影像档案</Link>
+          <Link href="/archive">公共档案</Link>
           <Link href="/archive?view=author">摄影师</Link>
           <Link href="/archive?view=date">时间线</Link>
           <Link href="/#this-week">本期山脊</Link>

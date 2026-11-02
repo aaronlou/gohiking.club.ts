@@ -15,7 +15,12 @@ export type PhotoDto = {
   status: Photo["status"];
   visibility: Photo["visibility"];
   activityId: string | null;
-  activity: { id: string; slug: string; title: string } | null;
+  activity: {
+    id: string;
+    slug: string;
+    title: string;
+    visibility?: "listed" | "unlisted" | "private";
+  } | null;
   theme: string;
   aiTheme: string | null;
   aiProvider: string | null;
@@ -80,7 +85,12 @@ export function toPhotoDto(
   author: Pick<User, "id" | "name" | "username" | "homeBase" | "bio">,
   options: {
     liked?: boolean;
-    activity?: { id: string; slug: string; title: string } | null;
+    activity?: {
+      id: string;
+      slug: string;
+      title: string;
+      visibility?: "listed" | "unlisted" | "private";
+    } | null;
   } = {},
 ): PhotoDto {
   const version = photo.evaluatedAt

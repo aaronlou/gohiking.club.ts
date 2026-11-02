@@ -14,7 +14,7 @@ type HeaderUser = {
 
 const navItems = [
   { href: "/activities", label: "活动", latin: "WALKS" },
-  { href: "/archive", label: "影像档案", latin: "ARCHIVE" },
+  { href: "/archive", label: "公共档案", latin: "PUBLIC" },
   { href: "/#this-week", label: "本期山脊", latin: "SELECTS" },
   { href: "/#standard", label: "如何观看", latin: "HOW WE LOOK" },
 ];
