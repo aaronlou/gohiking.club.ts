@@ -2,11 +2,16 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { DeletePhotoButton } from "@/components/delete-photo-button";
 import { ArrowUpRight, CheckIcon, QuoteMark } from "@/components/icons";
 import { getTheme } from "@/lib/constants";
-import { countdownLabel, formatScore } from "@/lib/utils";
+import { formatScore } from "@/lib/utils";
 import type { PhotoDto } from "@/server/photos/dto";
+
+const FALLBACK_TIPS = [
+  "换一个时间：日出后或日落前一小时，光会更轻，颜色也更有层次。",
+  "给画面找一个明确的主体，再决定把它放在哪里，别让山和天空各占一半。",
+  "留一点前景——石阶、草叶或同行的人，让看照片的人有走进画面的路。",
+];
 
 export function EvaluationResult({
   photo,
@@ -22,6 +27,7 @@ export function EvaluationResult({
   const router = useRouter();
   const score = photo.score ?? 0;
   const theme = getTheme(photo.theme);
+  const tips = photo.improvements.length > 0 ? photo.improvements : FALLBACK_TIPS;
 
   return (
     <div className={`result-panel ${accepted ? "is-accepted" : "is-rejected"}`}>
@@ -37,7 +43,7 @@ export function EvaluationResult({
           alt={photo.title}
         />
         <span className="result-panel__stamp">
-          {accepted ? "放进" : "暂存"}
+          {accepted ? "放进" : "未收录"}
           <strong>{formatScore(photo.score)}</strong>
           <small>/ 5</small>
         </span>
@@ -47,10 +53,14 @@ export function EvaluationResult({
         <div className="result-panel__top">
           <span className="eyebrow">
             <span className="dot" />
-            {accepted ? "A PLACE IN THE ARCHIVE / 已放进公共档案" : "A LITTLE MORE TIME / 这次先留给你"}
+            {accepted
+              ? "A PLACE IN THE ARCHIVE / 已放进公共档案"
+              : "A LITTLE MORE LIGHT / 这次还差一点"}
           </span>
           <span className="mono">
-            {latencyMs > 0 ? `${(latencyMs / 1000).toFixed(1)}s · ${photo.aiModel ?? "视觉手记"}` : photo.aiModel ?? ""}
+            {latencyMs > 0
+              ? `${(latencyMs / 1000).toFixed(1)}s · ${photo.aiModel ?? "视觉手记"}`
+              : photo.aiModel ?? ""}
           </span>
         </div>
 
@@ -63,11 +73,11 @@ export function EvaluationResult({
             </>
           ) : (
             <>
-              这次先不放进
+              这次没有进入
               <br />
               <em>公共档案，</em>
               <br />
-              但它没有被否定。
+              但这一趟没有白拍。
             </>
           )}
         </h2>
@@ -108,6 +118,12 @@ export function EvaluationResult({
                   <p>{item}</p>
                 </li>
               ))}
+              {!accepted && photo.strengths.length === 0 && (
+                <li>
+                  <span>01</span>
+                  <p>你愿意为这一趟举起相机，这件事本身就已经很好。</p>
+                </li>
+              )}
             </ol>
           </div>
           <div className="result-reasons__next">
@@ -116,7 +132,7 @@ export function EvaluationResult({
               <h3>{accepted ? "下一次，可以更好" : "下一次，可以试试"}</h3>
             </div>
             <ol>
-              {photo.improvements.map((item, index) => (
+              {tips.map((item, index) => (
                 <li key={item}>
                   <span>{String(index + 1).padStart(2, "0")}</span>
                   <p>{item}</p>
@@ -143,22 +159,34 @@ export function EvaluationResult({
         ) : (
           <>
             <div className="rejection-note">
-              <div className="rejection-note__icon">24h</div>
+              <div className="rejection-note__icon">↗</div>
               <div>
-                <strong>这张照片，会先留在你身边。</strong>
+                <strong>这次的照片不会被保存。</strong>
                 <p>
-                  你可以慢慢读完这份手记。{countdownLabel(photo.expiresAt)}，
-                  我们会自动移除原图与预览；你也可以随时提前删除。
+                  它不会出现在你的档案或公共档案里，你也不用删除什么。
+                  唯一留下来的，是下面这几条给下一次的建议。
                 </p>
               </div>
             </div>
+
+            <div className="result-encouragement">
+              <p>
+                山野不急着一次拍好。带着这些建议，再去拍一张；
+                你愿意带回来的每一张，都已经比昨天多走了一段路。
+              </p>
+              <span>— 给下一次按下快门的你</span>
+            </div>
+
             <div className="result-panel__actions">
               <button type="button" className="btn btn--ink" onClick={onAgain}>
-                换一张试试
+                再拍一张
               </button>
-              <DeletePhotoButton photoId={photo.id} label="提前删除" redirectTo="/studio" />
-              <Link href="/studio" className="text-link">
-                回到工作室
+              <Link href="/archive" className="btn btn--outline">
+                去看看公共档案
+                <ArrowUpRight />
+              </Link>
+              <Link href="/" className="text-link">
+                回到山口
                 <ArrowUpRight />
               </Link>
             </div>

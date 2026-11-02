@@ -60,7 +60,7 @@ export default async function StudioUploadPage({
                   <li><span>01</span> 先只给你看</li>
                   <li><span>02</span> 认真看一遍</li>
                   <li><span>03</span> 3 分以上与大家见面</li>
-                  <li><span>04</span> 还没到时，也留 24 小时</li>
+                  <li><span>04</span> 没到时，只留下建议</li>
                 </>
               )}
             </ol>

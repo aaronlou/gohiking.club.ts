@@ -28,7 +28,7 @@ describe("labels", () => {
   });
 
   it("maps score verdicts around the 3.0 threshold", () => {
-    expect(scoreVerdict(2.9)).toBe("先留给你");
+    expect(scoreVerdict(2.9)).toBe("还差一点");
     expect(scoreVerdict(3)).toBe("放进档案");
     expect(scoreVerdict(4.6)).toBe("编辑心头好");
   });

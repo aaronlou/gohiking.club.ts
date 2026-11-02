@@ -179,7 +179,7 @@ export default async function HomePage() {
           </a>
           <p>
             {provider.label} · {provider.model}
-            <span> / 3.0 分进入公共档案 / 暂存照片 24 小时后自动删除</span>
+            <span> / 3.0 分进入公共档案 / 没到 3 分只留下建议</span>
           </p>
         </div>
       </section>
@@ -298,7 +298,7 @@ export default async function HomePage() {
                   值得被认真看完。
                 </>
               }
-              description="我们请多模态视觉模型从光影、构图、山野叙事与独特观看四个维度阅读一张照片。5 分是满分，3 分是进入公共档案的邀请线，而不是对照片价值的判决。暂时没到 3 分的照片，也会收到具体、温柔的手记。"
+              description="我们请多模态视觉模型从光影、构图、山野叙事与独特观看四个维度阅读一张照片。5 分是满分，3 分是进入公共档案的邀请线，而不是对照片价值的判决。没到 3 分的照片不会保存在档案里，但会收到具体、温柔的拍摄建议。"
               light
             />
             <div className="score-scale" aria-label="评分参考：3 分进入公共档案，5 分满分">
@@ -319,8 +319,8 @@ export default async function HomePage() {
               </div>
             </div>
             <p className="standard-section__small">
-              还没到 3 分的照片不会被公开，也不会被否定。我们会在 24 小时内保留它，
-              供你读完手记，然后自动移除原图与预览。
+              没到 3 分的照片不会被公开，也不会被保存。你会收到一份具体、可执行的
+              拍摄建议，然后可以带着它再拍一张。
             </p>
           </div>
           <div className="rubric-list">

@@ -143,6 +143,17 @@ export function UploadStudio({ activity = null }: { activity?: ActivityContext }
       }
       setStage("evaluating");
       const evaluated = await evaluatePhotoRequest(uploaded.photo.id);
+      if (!evaluated.accepted && preview) {
+        // A rejected standalone photo is removed on the server. Keep showing
+        // the local preview so the handnote still has the image it talks about.
+        evaluated.photo = {
+          ...evaluated.photo,
+          previewUrl: preview,
+          thumbUrl: preview,
+          imageUrl: preview,
+          fullUrl: preview,
+        };
+      }
       setResult(evaluated);
       setStage("done");
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -279,7 +290,7 @@ export function UploadStudio({ activity = null }: { activity?: ActivityContext }
               <div className="progress-bar">
                 <span style={{ width: `${progress}%` }} />
               </div>
-              <p className="review-stage__note">原图会先进到只给你看的暂存区。等我们认真看完，再决定它去哪里。</p>
+              <p className="review-stage__note">原图会先进入只给你看的临时区。看完之后，达到邀请线的照片会留下，没到的不会被保存。</p>
             </>
           )}
 
@@ -329,7 +340,7 @@ export function UploadStudio({ activity = null }: { activity?: ActivityContext }
               </div>
               {photoId && (
                 <p className="review-stage__note">
-                  照片还安全地待在只给你看的暂存区。你可以稍后再看一次，或直接删除。
+                  照片还安全地保留着。你可以稍后再看一次，或直接删除。
                 </p>
               )}
             </>
@@ -420,7 +431,7 @@ export function UploadStudio({ activity = null }: { activity?: ActivityContext }
         <p className="upload-compose__hint">
           {activity
             ? "照片会直接进入活动相册，不会自动公开，也不用等待观看。"
-            : "原图会先进入只给你看的暂存区。主题、地点和可见性都可以之后再补。"}
+            : "原图会先进入只给你看的临时区。主题、地点和可见性都可以之后再补。"}
         </p>
       </section>
 
@@ -555,7 +566,7 @@ export function UploadStudio({ activity = null }: { activity?: ActivityContext }
           <p>
             {activity
               ? "照片只对同行者可见。以后想公开某一张，再由你本人在照片页决定。"
-              : "3.0 分以上会与大家见面；还没到 3 分，也会收到一份手记，并先在你身边留 24 小时。"}
+              : "3.0 分以上会与大家见面；没到 3 分不会保存，但会收到具体、温柔的拍摄建议。"}
           </p>
         </div>
       </section>

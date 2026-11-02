@@ -238,23 +238,45 @@ export async function evaluateAndFinalize(
 
       await deleteMedia([photoMediaKey("quarantine", photoId, "blur")]);
       await deletePhotoDirectory("quarantine", photoId).catch(() => undefined);
-    } else {
-      // Photos kept inside an activity must never expire: the album is the
-      // member's own record of the trip, not a 24-hour holding pen.
-      const expiresAt = photo.activityId
-        ? null
-        : new Date(
-            now.getTime() + Number(process.env.REJECTED_RETENTION_HOURS ?? 24) * 3_600_000,
-          );
+    } else if (photo.activityId) {
+      // Activity photos are never deleted because of a score. The handnote is
+      // kept for the photographer, and the photo stays in the private roll.
       [updated] = await db
         .update(photos)
         .set({
           ...common,
           status: "rejected",
-          expiresAt,
+          expiresAt: null,
         })
         .where(eq(photos.id, photoId))
         .returning();
+    } else {
+      // A standalone photo below the invitation line is not kept at all. Build
+      // the handnote first, then remove the file and the row so nothing is
+      // silently stored after the user has seen the result.
+      const rejectedPhoto = {
+        ...photo,
+        ...common,
+        status: "rejected" as const,
+        expiresAt: null,
+      };
+      const dto = toPhotoDto(rejectedPhoto, author);
+
+      await deletePhotoDirectory("quarantine", photoId).catch((error) => {
+        console.error(`[reject] could not remove media ${photoId}`, error);
+      });
+      await db
+        .delete(photos)
+        .where(eq(photos.id, photoId))
+        .catch((error) => {
+          console.error(`[reject] could not remove row ${photoId}`, error);
+        });
+
+      console.info(
+        `[reject] standalone photo removed id=${photoId} score=${evaluation.score}`,
+      );
+
+      return { photo: dto, accepted: false, latencyMs: evaluation.latencyMs };
     }
 
     if (!updated) {
@@ -354,16 +376,12 @@ export async function getPhotoRecord(photoId: string) {
 
 export async function cleanupExpiredMedia() {
   const now = new Date();
+  // Standalone photos are no longer held after a rejection; this also sweeps
+  // any legacy rows created before the rule changed.
   const expired = await db
     .select({ id: photos.id })
     .from(photos)
-    .where(
-      and(
-        eq(photos.status, "rejected"),
-        isNull(photos.activityId),
-        lt(photos.expiresAt, now),
-      ),
-    )
+    .where(and(eq(photos.status, "rejected"), isNull(photos.activityId)))
     .limit(50);
 
   for (const photo of expired) {

@@ -26,7 +26,9 @@ export function RetryEvaluationButton({
       push(
         result.accepted
           ? "这张照片已经放进公共档案"
-          : "这次先留在你的暂存区，24 小时后会自动移除",
+          : result.photo.activityId
+            ? "这次没有进入公共档案，照片仍然留在活动里"
+            : "这次没有进入公共档案，照片已经移除。可以再放一张。",
       );
       router.refresh();
     } catch (error) {

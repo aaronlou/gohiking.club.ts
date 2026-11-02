@@ -53,7 +53,7 @@ export function SiteFooter() {
         </div>
         <div className="site-footer__col site-footer__col--note">
           <span className="footer-label">A NOTE / 说明</span>
-          <p>照片会被多模态视觉模型认真观看。还没到 3 分的照片，也会收到具体的手记，并先在你身边留 24 小时。</p>
+          <p>照片会被多模态视觉模型认真观看。没到 3 分的照片不会保存，但会收到具体、可执行的拍摄建议。</p>
           <span className="footer-coord">30°40′N · 104°04′E</span>
         </div>
       </div>

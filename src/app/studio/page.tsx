@@ -28,9 +28,7 @@ export default async function StudioDashboardPage() {
     timeZone: "Asia/Shanghai",
   }).format(new Date());
 
-  const quarantine = photos.filter(
-    (photo) => photo.status === "rejected" && !photo.activityId,
-  ).length;
+  const interrupted = photos.filter((photo) => photo.status === "failed").length;
 
   return (
     <div className="studio-dashboard">
@@ -94,18 +92,18 @@ export default async function StudioDashboardPage() {
         </div>
       </section>
 
-      {quarantine > 0 && (
+      {interrupted > 0 && (
         <div className="studio-alert">
           <span className="studio-alert__mark">!</span>
           <div>
-            <strong>有 {quarantine} 张照片还在暂存区。</strong>
+            <strong>有 {interrupted} 张照片的观看被中断了。</strong>
             <p>
-              它们没有被公开，也没有被否定。只是这一次，还没找到最合适的位置。
-              你可以看看手记，也可以随时提前删除。
+              它们没有被评分，也没有被否定。可以回到照片页再看一次，
+              或者先放一放，等下一次有心情的时候。
             </p>
           </div>
           <Link href="#photos" className="text-link">
-            看看这份手记
+            去看看
             <ArrowUpRight />
           </Link>
         </div>

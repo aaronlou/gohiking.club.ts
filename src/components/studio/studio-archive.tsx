@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { DeletePhotoButton } from "@/components/delete-photo-button";
 import { ArrowUpRight } from "@/components/icons";
 import { getTheme } from "@/lib/constants";
-import { countdownLabel, formatScore, formatShortDate } from "@/lib/utils";
+import { formatScore, formatShortDate } from "@/lib/utils";
 import type { PhotoDto } from "@/server/photos/dto";
 import { RetryEvaluationButton } from "./retry-evaluation-button";
 
@@ -121,16 +121,12 @@ export function StudioArchive({ photos }: { photos: PhotoDto[] }) {
                         : photo.status === "rejected"
                           ? inActivity
                             ? "未公开"
-                            : "暂存"
+                            : "未收录"
                           : photo.status === "failed"
                             ? "观看中断"
                             : "观看中"}
                   </span>
-                  {isRejected && !inActivity && (
-                    <span className="studio-photo__timer">
-                      {countdownLabel(photo.expiresAt)}移除
-                    </span>
-                  )}
+
                 </Link>
                 <div className="studio-photo__info">
                   <div className="studio-photo__meta">

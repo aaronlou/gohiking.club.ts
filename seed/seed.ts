@@ -56,22 +56,27 @@ async function main() {
   if (!demoId) throw new Error("demo user missing");
 
   for (const [index, seedPhoto] of seedPhotos.entries()) {
+    if (seedPhoto.status === "rejected") {
+      console.log(
+        `  photo ${String(index + 1).padStart(2, "0")} ${seedPhoto.asset.padEnd(20)} skipped (rejected photos are not stored)`,
+      );
+      continue;
+    }
+
     const buffer = await readFile(path.join(assetRoot, seedPhoto.asset));
     const authorId = userIds.get(seedPhoto.author);
     if (!authorId) throw new Error(`Unknown author ${seedPhoto.author}`);
 
-    const scope = seedPhoto.status === "accepted" ? "photos" : "quarantine";
+    const scope = "photos" as const;
     await deletePhotoDirectory("photos", seedPhoto.id);
     await deletePhotoDirectory("quarantine", seedPhoto.id);
     const prepared = await preparePhoto(buffer, seedPhoto.id, scope);
 
     const takenAt = new Date(`${seedPhoto.takenAt}T12:00:00+08:00`);
-    const acceptedAt =
-      seedPhoto.status === "accepted"
-        ? new Date(Date.now() - seedPhoto.daysAgo * 86_400_000 - index * 60_000)
-        : null;
-    const expiresAt =
-      seedPhoto.status === "rejected" ? new Date(Date.now() + 24 * 3_600_000) : null;
+    const acceptedAt = new Date(
+      Date.now() - seedPhoto.daysAgo * 86_400_000 - index * 60_000,
+    );
+    const expiresAt = null;
 
     await db
       .insert(photos)

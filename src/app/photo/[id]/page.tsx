@@ -10,7 +10,6 @@ import { PhotoViewer } from "@/components/photo-viewer";
 import { relatedPhotos } from "@/lib/archive";
 import { SCORE_RUBRIC, getTheme } from "@/lib/constants";
 import {
-  countdownLabel,
   formatDate,
   formatScore,
   initials,
@@ -66,18 +65,28 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
   return (
     <article className="photo-page">
       {isRejected && (
-        <div className="quarantine-banner">
+        <div className="quarantine-banner quarantine-banner--rejected">
           <div className="shell quarantine-banner__inner">
             <div>
-              <span className="quarantine-banner__label">A LITTLE MORE TIME / 先留在你身边</span>
+              <span className="quarantine-banner__label">
+                {photo.activityId
+                  ? "A LITTLE MORE LIGHT / 这次还差一点"
+                  : "NOT THIS TIME / 这次没有收录"}
+              </span>
               <p>
-                这张照片这次没有走进公共档案。不是它不够好，只是还需要一点时间。
-                它会先留在只给你看的暂存区。<strong>{countdownLabel(photo.expiresAt)}自动移除。</strong>
+                {photo.activityId
+                  ? `这张照片没有通过公共档案的邀请线，但它仍然留在《${photo.activity?.title ?? "这次活动"}》的相册里，只有同行者能看到。手记和建议已经留在这里。`
+                  : "这张照片没有进入公共档案，也不会被保存。你没有做错什么，只是这一次还没有走到邀请线上。"}
               </p>
             </div>
-            <div className="quarantine-banner__actions">
-              <DeletePhotoButton photoId={photo.id} label="提前删除" />
-            </div>
+            {photo.activityId && activityLinkable && photo.activity && (
+              <div className="quarantine-banner__actions">
+                <Link href={`/activities/${photo.activity.slug}`} className="btn btn--outline">
+                  回到活动
+                  <ArrowUpRight />
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -171,7 +180,7 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
                   WATCH NOTE / 观看分
                 </span>
                 <span className={`score-state ${isRejected ? "is-rejected" : ""}`}>
-                  {isRejected ? "暂存" : scoreVerdict(score)}
+                  {isRejected ? "未进公共档案" : scoreVerdict(score)}
                 </span>
               </div>
               <div className="photo-score__number">
@@ -316,11 +325,11 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
             <h2>
               {isRejected ? (
                 <>
-                  这次先不放进
+                  这次没有进入
                   <br />
                   <em>公共档案。</em>
                   <br />
-                  但没有白走一趟。
+                  但这一趟没有白拍。
                 </>
               ) : (
                 <>

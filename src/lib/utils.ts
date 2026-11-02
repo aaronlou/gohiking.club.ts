@@ -87,15 +87,6 @@ export function relativeTime(value: Date | string) {
   return formatShortDate(value);
 }
 
-export function countdownLabel(expiresAt: Date | string | null) {
-  if (!expiresAt) return "稍后";
-  const remaining = new Date(expiresAt).getTime() - Date.now();
-  if (remaining <= 0) return "马上";
-  const hours = Math.floor(remaining / 3_600_000);
-  const minutes = Math.floor((remaining % 3_600_000) / 60_000);
-  if (hours > 0) return `${hours} 小时 ${minutes} 分后`;
-  return `${minutes} 分钟后`;
-}
 
 export function formatScore(score: string | number | null | undefined) {
   if (score === null || score === undefined || score === "") return "—";
@@ -108,7 +99,7 @@ export function scoreVerdict(score: number) {
   if (score >= 4.5) return "编辑心头好";
   if (score >= 4) return "很打动我们";
   if (score >= 3) return "放进档案";
-  return "先留给你";
+  return "还差一点";
 }
 
 export function padIndex(value: number, length = 2) {
