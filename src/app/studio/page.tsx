@@ -49,7 +49,7 @@ export default async function StudioDashboardPage() {
               <em>山里的光还在。</em>
             </h1>
             <p className="studio-head__note">
-              这里收着你走过的山：一起同行的活动、单独放进来的照片，以及它们被看见的样子。
+              这里收着你走过的山：一起同行的活动，以及它们带回来的照片。
               活动相册只对同行者可见；想公开时，再由你决定。
             </p>
           </div>
@@ -132,7 +132,7 @@ export default async function StudioDashboardPage() {
                 <h2>照片档案</h2>
               </div>
               <span className="studio-section-head__note">
-                {overview.totalPhotos} 张 · 单独上传 {overview.standalonePhotos} 张
+                {overview.totalPhotos} 张 · 分布在 {overview.chapters.length} 次活动
               </span>
             </div>
             <StudioArchive photos={photos} />

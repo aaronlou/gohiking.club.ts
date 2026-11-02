@@ -11803,3 +11803,86 @@ body:has(.studio-page) .site-footer {
     width: 100%;
   }
 }
+
+/* Upload requires a trip. The gate is a choice, not an error. */
+.upload-gate {
+  padding-top: 2px;
+  padding-bottom: 20px;
+}
+
+.upload-gate__notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 20px 0 4px;
+  padding: 12px 14px;
+  border: 1px solid rgba(223, 90, 52, 0.32);
+  background: rgba(223, 90, 52, 0.05);
+}
+
+.upload-gate__notice-mark {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  border: 1px solid var(--signal);
+  border-radius: 50%;
+  font-family: var(--font-serif);
+  font-size: 14px;
+  color: var(--signal-deep);
+}
+
+.upload-gate__notice p {
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--ink-mute);
+}
+
+.upload-gate__list {
+  padding-top: 24px;
+}
+
+.upload-gate__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 14px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  color: var(--ink-mute);
+}
+
+.studio-chapter__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 5px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  color: var(--signal-deep);
+}
+
+.studio-chapter__cta svg {
+  width: 10px;
+  height: 10px;
+}
+
+@media (max-width: 760px) {
+  .upload-gate__head {
+    font-size: 9px;
+  }
+
+  .upload-gate__head > span:last-child {
+    white-space: nowrap;
+  }
+
+  .studio-chapter__cta {
+    font-size: 9.5px;
+  }
+}

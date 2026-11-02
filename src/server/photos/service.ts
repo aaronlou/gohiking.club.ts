@@ -38,7 +38,7 @@ export async function createPhoto(input: {
   userId: string;
   fileBuffer: Buffer;
   fields: PhotoUploadInput;
-  activityId?: string | null;
+  activityId: string;
 }) {
   const { userId, fileBuffer, fields, activityId } = input;
   const photoId = randomUUID();
@@ -61,10 +61,10 @@ export async function createPhoto(input: {
         userId,
         title: fields.title?.trim() || "未命名山野",
         caption: fields.caption || null,
-        activityId: activityId ?? null,
+        activityId,
         theme: fields.theme,
-        visibility: activityId ? "activity" : fields.visibility,
-        status: activityId ? "unrated" : "evaluating",
+        visibility: "activity",
+        status: "unrated",
         takenAt,
         locationName: fields.locationName || null,
         latitude: prepared.exif.latitude,

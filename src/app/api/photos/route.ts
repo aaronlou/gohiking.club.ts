@@ -82,13 +82,18 @@ export async function POST(request: Request) {
   }
 
   const activityId = formData.get("activityId");
-  if (activityId) {
-    if (typeof activityId !== "string" || !/^[0-9a-f-]{36}$/i.test(activityId)) {
-      return errorResponse("没有找到这次活动。", "invalid_activity", 400);
-    }
-    if (!(await canUploadToActivity(activityId, user.id))) {
-      return errorResponse("加入这次活动之后，才能把照片放进去。", "not_member", 403);
-    }
+  if (!activityId) {
+    return errorResponse(
+      "每一张照片都需要先归入一次徒步活动。请从活动相册进入上传。",
+      "activity_required",
+      400,
+    );
+  }
+  if (typeof activityId !== "string" || !/^[0-9a-f-]{36}$/i.test(activityId)) {
+    return errorResponse("没有找到这次活动。", "invalid_activity", 400);
+  }
+  if (!(await canUploadToActivity(activityId, user.id))) {
+    return errorResponse("加入这次活动之后，才能把照片放进去。", "not_member", 403);
   }
 
   try {
@@ -97,7 +102,7 @@ export async function POST(request: Request) {
       userId: user.id,
       fileBuffer: buffer,
       fields: parsed.data,
-      activityId: typeof activityId === "string" ? activityId : null,
+      activityId,
     });
 
     const dto = await getPhotoById(photo.id, user.id);

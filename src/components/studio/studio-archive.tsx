@@ -9,12 +9,11 @@ import { formatScore, formatShortDate } from "@/lib/utils";
 import type { PhotoDto } from "@/server/photos/dto";
 import { RetryEvaluationButton } from "./retry-evaluation-button";
 
-type Filter = "all" | "activity" | "standalone" | "public" | "quarantine";
+type Filter = "all" | "activity" | "public" | "quarantine";
 
 const filters: { id: Filter; label: string }[] = [
   { id: "all", label: "全部" },
   { id: "activity", label: "活动" },
-  { id: "standalone", label: "单独" },
   { id: "public", label: "已公开" },
   { id: "quarantine", label: "待处理" },
 ];
@@ -23,7 +22,6 @@ function countsFor(photos: PhotoDto[]) {
   return {
     all: photos.length,
     activity: photos.filter((photo) => photo.activityId).length,
-    standalone: photos.filter((photo) => !photo.activityId).length,
     public: photos.filter(
       (photo) => photo.status === "accepted" && photo.visibility === "public",
     ).length,
@@ -42,7 +40,6 @@ export function StudioArchive({ photos }: { photos: PhotoDto[] }) {
   const filtered = useMemo(() => {
     if (filter === "all") return photos;
     if (filter === "activity") return photos.filter((photo) => photo.activityId);
-    if (filter === "standalone") return photos.filter((photo) => !photo.activityId);
     if (filter === "public") {
       return photos.filter(
         (photo) => photo.status === "accepted" && photo.visibility === "public",
@@ -58,9 +55,7 @@ export function StudioArchive({ photos }: { photos: PhotoDto[] }) {
   const emptyCopy =
     filter === "activity"
       ? "还没有照片放进活动。从活动页点「放进一张照片」就会收在这里。"
-      : filter === "standalone"
-        ? "还没有单独上传的照片。所有不属于活动的照片都会留在这里。"
-        : filter === "public"
+      : filter === "public"
           ? "还没有公开的照片。想公开时，在照片页由你自己决定。"
           : filter === "quarantine"
             ? "暂时没有需要处理的照片。"
