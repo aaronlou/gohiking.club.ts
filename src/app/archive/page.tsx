@@ -216,6 +216,36 @@ function AuthorIndex({ photos }: { photos: PhotoDto[] }) {
   );
 }
 
+function EmptyArchive() {
+  return (
+    <section className="archive-empty">
+      <p className="eyebrow">
+        <span className="dot" />
+        FIRST LIGHT / 等第一张
+      </p>
+      <h2>
+        公共档案，
+        <br />
+        还在等第一张山野。
+      </h2>
+      <p>
+        把一张照片放进来，被认真看过之后，它会在这里找到自己的位置。
+        没到 3 分的照片不会保存，但会留下给下一次的建议。
+      </p>
+      <div className="archive-empty__actions">
+        <Link href="/studio/upload" className="btn btn--ink">
+          放进第一张照片
+          <ArrowUpRight />
+        </Link>
+        <Link href="/activities" className="text-link">
+          先去看看活动
+          <ArrowUpRight />
+        </Link>
+      </div>
+    </section>
+  );
+}
+
 export default async function ArchivePage({
   searchParams,
 }: {
@@ -236,10 +266,16 @@ export default async function ArchivePage({
       <ArchiveHero total={allPhotos.length} theme={validTheme} />
       <ViewTabs view={view} theme={validTheme} />
       <div className="archive-content shell">
-        {validTheme && <ThemeGrid photos={photos} />}
-        {!validTheme && view === "theme" && <ThemeIndex photos={photos} />}
-        {!validTheme && view === "date" && <DateIndex photos={photos} />}
-        {!validTheme && view === "author" && <AuthorIndex photos={photos} />}
+        {allPhotos.length === 0 ? (
+          <EmptyArchive />
+        ) : (
+          <>
+            {validTheme && <ThemeGrid photos={photos} />}
+            {!validTheme && view === "theme" && <ThemeIndex photos={photos} />}
+            {!validTheme && view === "date" && <DateIndex photos={photos} />}
+            {!validTheme && view === "author" && <AuthorIndex photos={photos} />}
+          </>
+        )}
       </div>
     </div>
   );
