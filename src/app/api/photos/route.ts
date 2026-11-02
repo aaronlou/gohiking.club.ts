@@ -3,6 +3,7 @@ import { canUploadToActivity } from "@/server/activities/access";
 import { photoUploadSchema } from "@/lib/validation";
 import { requireApiUser } from "@/server/auth-session";
 import { ACCEPTED_MIME_TYPES, MAX_UPLOAD_BYTES, MAX_UPLOAD_MB } from "@/server/media/process";
+import { signPhotoMedia } from "@/server/media/signed-url";
 import { getPhotoById, countRecentUploads } from "@/server/photos/queries";
 import { createPhoto, PhotoServiceError } from "@/server/photos/service";
 
@@ -106,7 +107,12 @@ export async function POST(request: Request) {
     });
 
     const dto = await getPhotoById(photo.id, user.id);
-    return NextResponse.json({ photo: dto }, { status: 201 });
+    // Sign media URLs so cookie-less clients (mini-program <image>) can render
+    // activity-private photos right after upload.
+    return NextResponse.json(
+      { photo: dto ? signPhotoMedia(dto, user.id) : null },
+      { status: 201 },
+    );
   } catch (error) {
     if (error instanceof PhotoServiceError) {
       return errorResponse(error.message, error.code, error.status);

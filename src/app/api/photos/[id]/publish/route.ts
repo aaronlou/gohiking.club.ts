@@ -4,6 +4,7 @@ import { AIServiceError } from "@/server/ai/evaluator";
 import { requireApiUser } from "@/server/auth-session";
 import { db } from "@/server/db";
 import { photos } from "@/server/db/schema";
+import { signPhotoMedia } from "@/server/media/signed-url";
 import {
   evaluateAndFinalize,
   getPhotoRecord,
@@ -34,7 +35,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   try {
     const result = await evaluateAndFinalize(id, user.id, { publish: true });
-    return NextResponse.json(result, { headers: { "cache-control": "no-store" } });
+    return NextResponse.json(
+      { ...result, photo: signPhotoMedia(result.photo, user.id) },
+      { headers: { "cache-control": "no-store" } },
+    );
   } catch (error) {
     if (error instanceof PhotoServiceError) {
       return NextResponse.json({ error: error.message, code: error.code }, { status: error.status });
