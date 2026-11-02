@@ -8,8 +8,10 @@ RUN corepack enable && corepack prepare pnpm@10.32.1 --activate
 WORKDIR /app
 
 FROM base AS deps
+# Optional registry mirror for networks where registry.npmjs.org is slow.
+ARG NPM_REGISTRY=https://registry.npmjs.org
 COPY package.json pnpm-lock.yaml .npmrc ./
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --registry=${NPM_REGISTRY}
 
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
