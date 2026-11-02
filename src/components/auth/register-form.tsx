@@ -132,8 +132,8 @@ export function RegisterForm({ next }: { next: string }) {
       </p>
 
       <p className="auth-terms">
-        照片会接受多模态视觉模型的观看；还没进入公共档案的照片，会先在你身边留 24 小时。
-        照片版权始终属于拍摄者。
+        照片会接受多模态视觉模型的观看；独立上传的照片若还没进入公共档案，会先在你身边留 24 小时。
+        活动里的照片只对同行者可见，是否公开由你决定。照片版权始终属于拍摄者。
       </p>
 
       <p className="auth-switch">

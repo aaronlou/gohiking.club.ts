@@ -10704,3 +10704,7 @@ body:has(.studio-page) .site-footer {
     font-size: clamp(1.8rem, 8vw, 2.4rem);
   }
 }
+
+#album {
+  scroll-margin-top: calc(var(--header-h) + 18px);
+}

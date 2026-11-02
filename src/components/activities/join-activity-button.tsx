@@ -42,10 +42,10 @@ export function JoinActivityButton({
 
   if (isMember) {
     return (
-      <Link href={`/studio/upload?activity=${encodeURIComponent(slug)}`} className="btn btn--ink">
-        放进一张照片
+      <a href="#album" className="btn btn--ink">
+        看这次的照片
         <ArrowRight />
-      </Link>
+      </a>
     );
   }
 

@@ -152,7 +152,7 @@ export default async function ActivitiesPage() {
           </section>
         )}
 
-        {publicActivities.length === 0 && !user && (
+        {publicActivities.length === 0 && (
           <section className="activity-list__empty">
             <span className="activity-list__empty-mark">
               <LockIcon />

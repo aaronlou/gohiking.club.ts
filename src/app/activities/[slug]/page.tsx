@@ -123,7 +123,7 @@ export default async function ActivityPage({ params }: { params: Promise<{ slug:
 
       <div className="shell activity-layout">
         <main className="activity-layout__main">
-          <section className="activity-section">
+          <section className="activity-section" id="album">
             <div className="activity-section__head">
               <div>
                 <span className="mono">FIELD ROLL / 同行相册</span>

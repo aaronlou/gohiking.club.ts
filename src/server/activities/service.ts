@@ -237,15 +237,19 @@ export async function inviteMember(activityId: string, hostId: string, username:
     throw new ActivityServiceError(409, "self", "你已经是这次活动的发起人了");
   }
 
-  if (activity.capacity && (await countApproved(activityId)) >= activity.capacity) {
-    throw new ActivityServiceError(409, "full", "同行名额已经满了");
-  }
-
   const [existing] = await db
     .select()
     .from(activityMembers)
     .where(and(eq(activityMembers.activityId, activityId), eq(activityMembers.userId, target.id)))
     .limit(1);
+
+  if (existing?.status === "approved") {
+    return { ok: true, name: target.name };
+  }
+
+  if (activity.capacity && (await countApproved(activityId)) >= activity.capacity) {
+    throw new ActivityServiceError(409, "full", "同行名额已经满了");
+  }
 
   const now = new Date();
   if (existing) {
