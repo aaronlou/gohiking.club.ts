@@ -37,7 +37,7 @@ services:
       DATABASE_URL: postgresql://gohiking:${POSTGRES_PASSWORD:-gohiking}@db:5432/gohiking
       MEDIA_ROOT: /data/media
       REJECTED_RETENTION_HOURS: ${REJECTED_RETENTION_HOURS:-24}
-      UPLOAD_MAX_MB: ${UPLOAD_MAX_MB:-30}
+      UPLOAD_MAX_MB: ${UPLOAD_MAX_MB:-20}
       UPLOADS_PER_HOUR: ${UPLOADS_PER_HOUR:-12}
       AI_PROVIDER: ${AI_PROVIDER:-ollama}
       OLLAMA_URL: ${DOCKER_OLLAMA_URL:-http://host.docker.internal:11434}

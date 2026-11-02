@@ -119,7 +119,7 @@ export function profileHref(username: string) {
   return `/hikers/${encodeURIComponent(username)}`;
 }
 
-export function imageUrl(photoId: string, variant: "thumb" | "display" = "display", version?: string) {
+export function imageUrl(photoId: string, variant: "thumb" | "preview" | "full" = "preview", version?: string) {
   return `/api/photos/${photoId}/image?variant=${variant}${version ? `&v=${version}` : ""}`;
 }
 

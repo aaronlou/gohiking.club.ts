@@ -82,6 +82,6 @@ export async function mediaExists(key: string) {
   }
 }
 
-export function photoMediaKey(scope: MediaScope, photoId: string, variant: "display" | "thumb" | "blur") {
+export function photoMediaKey(scope: MediaScope, photoId: string, variant: "full" | "preview" | "thumb" | "blur" | "display") {
   return path.posix.join(scope, photoId, `${variant}.webp`);
 }

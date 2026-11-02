@@ -31,8 +31,15 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     return new NextResponse("Not found", { status: 404 });
   }
 
-  const variant = new URL(request.url).searchParams.get("variant") === "thumb" ? "thumb" : "display";
-  const key = variant === "thumb" ? photo.thumbKey : photo.fileKey;
+  const requested = new URL(request.url).searchParams.get("variant");
+  const variant =
+    requested === "thumb" ? "thumb" : requested === "preview" ? "preview" : "full";
+  const key =
+    variant === "thumb"
+      ? photo.thumbKey
+      : variant === "preview"
+        ? (photo.previewKey ?? photo.thumbKey ?? photo.fileKey)
+        : (photo.fileKey ?? photo.previewKey ?? photo.thumbKey);
 
   if (!key) {
     return new NextResponse("Not found", { status: 404 });

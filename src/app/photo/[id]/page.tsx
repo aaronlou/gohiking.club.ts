@@ -5,6 +5,7 @@ import { DeletePhotoButton } from "@/components/delete-photo-button";
 import { ArrowUpRight, LockIcon, QuoteMark } from "@/components/icons";
 import { LikeButton } from "@/components/like-button";
 import { PhotoCard } from "@/components/photo-card";
+import { PhotoViewer } from "@/components/photo-viewer";
 import { relatedPhotos } from "@/lib/archive";
 import { SCORE_RUBRIC, getTheme } from "@/lib/constants";
 import {
@@ -34,7 +35,7 @@ export async function generateMetadata({
     openGraph: {
       title: `${photo.title} · 山行档案`,
       description: photo.summary ?? undefined,
-      images: photo.imageUrl,
+      images: photo.previewUrl,
     },
   };
 }
@@ -103,19 +104,12 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
 
       <div className="photo-page__layout shell">
         <div className="photo-page__visual">
-          <figure className="photo-detail-frame" style={{ backgroundColor: photo.dominantColor ?? undefined }}>
-            <img
-              src={photo.imageUrl}
-              srcSet={`${photo.thumbUrl} 720w, ${photo.imageUrl} 2200w`}
-              sizes="(max-width: 900px) 100vw, 62vw"
-              alt={photo.title}
-              fetchPriority="high"
-            />
-            <figcaption>
-              <span>{theme.label} / {theme.latin}</span>
-              <span>{formatDate(photo.takenAt)}</span>
-            </figcaption>
-          </figure>
+          <PhotoViewer
+            photo={photo}
+            themeLabel={theme.label}
+            themeLatin={theme.latin}
+            dateLabel={formatDate(photo.takenAt)}
+          />
           <div className="photo-page__under">
             <p>
               {photo.caption || "这张照片没有留下文字，但画面已经把当时的风说了一些。"}

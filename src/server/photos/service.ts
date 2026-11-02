@@ -75,7 +75,8 @@ export async function createPhoto(input: {
         focalLength: prepared.exif.focalLength,
         width: prepared.width,
         height: prepared.height,
-        fileKey: prepared.displayKey,
+        fileKey: prepared.fullKey,
+        previewKey: prepared.previewKey,
         thumbKey: prepared.thumbKey,
         blurData: prepared.blurData,
         dominantColor: prepared.dominantColor,
@@ -140,11 +141,11 @@ export async function evaluateAndFinalize(photoId: string, userId: string): Prom
   evaluationsInFlight.add(photoId);
 
   try {
-    const displayKey = photo.fileKey;
+    const analysisKey = photo.previewKey ?? photo.fileKey;
     let fileBuffer: Buffer;
     try {
       const { readMedia } = await import("@/server/media/storage");
-      fileBuffer = await readMedia(displayKey);
+      fileBuffer = await readMedia(analysisKey);
     } catch {
       throw new PhotoServiceError(422, "missing_file", "照片文件缺失，请重新上传");
     }
@@ -183,18 +184,21 @@ export async function evaluateAndFinalize(photoId: string, userId: string): Prom
     let updated;
 
     if (accepted) {
-      const displayKey = photoMediaKey("photos", photoId, "display");
+      const fullKey = photoMediaKey("photos", photoId, "full");
+      const previewKey = photoMediaKey("photos", photoId, "preview");
       const thumbKey = photoMediaKey("photos", photoId, "thumb");
-      let movedDisplay = false;
+      const moves: Array<{ from: string; to: string }> = [];
+      const move = async (from: string | null, to: string) => {
+        if (!from) return false;
+        await moveMedia(from, to);
+        moves.push({ from, to });
+        return true;
+      };
 
       try {
-        if (photo.fileKey) {
-          await moveMedia(photo.fileKey, displayKey);
-          movedDisplay = true;
-        }
-        if (photo.thumbKey) {
-          await moveMedia(photo.thumbKey, thumbKey);
-        }
+        await move(photo.fileKey, fullKey);
+        const movedPreview = await move(photo.previewKey, previewKey);
+        await move(photo.thumbKey, thumbKey);
         [updated] = await db
           .update(photos)
           .set({
@@ -202,14 +206,15 @@ export async function evaluateAndFinalize(photoId: string, userId: string): Prom
             status: "accepted",
             acceptedAt: now,
             expiresAt: null,
-            fileKey: displayKey,
+            fileKey: fullKey,
+            previewKey: movedPreview ? previewKey : null,
             thumbKey,
           })
           .where(eq(photos.id, photoId))
           .returning();
       } catch (error) {
-        if (movedDisplay && photo.fileKey) {
-          await moveMedia(displayKey, photo.fileKey).catch(() => undefined);
+        for (const item of moves.reverse()) {
+          await moveMedia(item.to, item.from).catch(() => undefined);
         }
         throw error;
       }

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { photoUploadSchema } from "@/lib/validation";
 import { requireApiUser } from "@/server/auth-session";
-import { ACCEPTED_MIME_TYPES, MAX_UPLOAD_BYTES } from "@/server/media/process";
+import { ACCEPTED_MIME_TYPES, MAX_UPLOAD_BYTES, MAX_UPLOAD_MB } from "@/server/media/process";
 import { getPhotoById, countRecentUploads } from "@/server/photos/queries";
 import { createPhoto, PhotoServiceError } from "@/server/photos/service";
 
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
 
   const contentLength = Number(request.headers.get("content-length") ?? 0);
   if (contentLength > MAX_UPLOAD_BYTES + 2 * 1024 * 1024) {
-    return errorResponse("这张照片有点大，换一张试试吧。", "too_large", 413);
+    return errorResponse(`这张照片超过了 ${MAX_UPLOAD_MB}MB，压缩一下再试试吧。`, "too_large", 413);
   }
 
   const limit = Number(process.env.UPLOADS_PER_HOUR ?? 12);
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
     return errorResponse("这张照片好像没有内容，换一张试试吧。", "empty_file", 400);
   }
   if (file.size > MAX_UPLOAD_BYTES) {
-    return errorResponse("这张照片有点大，换一张试试吧。", "too_large", 413);
+    return errorResponse(`这张照片超过了 ${MAX_UPLOAD_MB}MB，压缩一下再试试吧。`, "too_large", 413);
   }
   if (file.type && !ACCEPTED_MIME_TYPES.has(file.type) && !file.type.startsWith("image/")) {
     return errorResponse("可以试试 JPEG、PNG、WebP、AVIF 或 HEIC 格式的照片。", "invalid_type", 415);

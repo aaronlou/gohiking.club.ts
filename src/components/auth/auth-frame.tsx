@@ -23,8 +23,12 @@ export function AuthFrame({
       <div className="auth-visual">
         {image ? (
           <img
-            src={image.imageUrl}
-            srcSet={`${image.thumbUrl} 720w, ${image.imageUrl} 2200w`}
+            src={image.previewUrl}
+            srcSet={
+              image.previewUrl !== image.thumbUrl
+                ? `${image.thumbUrl} 720w, ${image.previewUrl} 1280w`
+                : undefined
+            }
             sizes="(max-width: 900px) 100vw, 46vw"
             alt={image.title}
             className="auth-visual__image"

@@ -45,6 +45,8 @@ export type PhotoDto = {
   acceptedAt: string | null;
   expiresAt: string | null;
   imageUrl: string;
+  previewUrl: string;
+  fullUrl: string;
   thumbUrl: string;
   author: PublicAuthor;
   liked?: boolean;
@@ -116,7 +118,11 @@ export function toPhotoDto(
     evaluatedAt: iso(photo.evaluatedAt),
     acceptedAt: iso(photo.acceptedAt),
     expiresAt: iso(photo.expiresAt),
-    imageUrl: `/api/photos/${photo.id}/image?variant=display&v=${version}`,
+    imageUrl: `/api/photos/${photo.id}/image?variant=full&v=${version}`,
+    previewUrl: photo.previewKey
+      ? `/api/photos/${photo.id}/image?variant=preview&v=${version}`
+      : `/api/photos/${photo.id}/image?variant=thumb&v=${version}`,
+    fullUrl: `/api/photos/${photo.id}/image?variant=full&v=${version}`,
     thumbUrl: `/api/photos/${photo.id}/image?variant=thumb&v=${version}`,
     author: toAuthor(author),
     ...(options.liked === undefined ? {} : { liked: options.liked }),

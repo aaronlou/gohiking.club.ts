@@ -121,8 +121,12 @@ export default async function HomePage() {
 
             <figure className="hero-photo hero-photo--main">
               <img
-                src={heroPhoto.imageUrl}
-                srcSet={`${heroPhoto.thumbUrl} 720w, ${heroPhoto.imageUrl} 2200w`}
+                src={heroPhoto.previewUrl}
+                srcSet={
+                  heroPhoto.previewUrl !== heroPhoto.thumbUrl
+                    ? `${heroPhoto.thumbUrl} 720w, ${heroPhoto.previewUrl} 1280w`
+                    : undefined
+                }
                 sizes="(max-width: 760px) 78vw, 40vw"
                 alt={heroPhoto.title}
                 fetchPriority="high"
@@ -136,11 +140,10 @@ export default async function HomePage() {
             {insetPhoto && (
               <figure className="hero-photo hero-photo--inset">
                 <img
-                  src={insetPhoto.imageUrl}
-                  srcSet={`${insetPhoto.thumbUrl} 720w, ${insetPhoto.imageUrl} 2200w`}
-                  sizes="(max-width: 760px) 48vw, 22vw"
+                  src={insetPhoto.thumbUrl}
                   alt={insetPhoto.title}
                   loading="lazy"
+                  decoding="async"
                 />
                 <figcaption>
                   <span>{insetPhoto.title}</span>
@@ -249,8 +252,12 @@ export default async function HomePage() {
       <section className="quote-section" style={{ backgroundColor: quotePhoto?.dominantColor ?? "#2b342b" }}>
         {quotePhoto && (
           <img
-            src={quotePhoto.imageUrl}
-            srcSet={`${quotePhoto.thumbUrl} 720w, ${quotePhoto.imageUrl} 2200w`}
+            src={quotePhoto.previewUrl}
+            srcSet={
+              quotePhoto.previewUrl !== quotePhoto.thumbUrl
+                ? `${quotePhoto.thumbUrl} 720w, ${quotePhoto.previewUrl} 1280w`
+                : undefined
+            }
             sizes="100vw"
             alt=""
             aria-hidden

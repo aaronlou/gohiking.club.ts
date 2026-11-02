@@ -16,7 +16,7 @@ import { CloseIcon, EyeIcon, LockIcon, SpinnerIcon, UploadIcon } from "@/compone
 import { useToast } from "@/components/toast";
 import { EvaluationResult } from "./evaluation-result";
 
-const MAX_MB = 30;
+const MAX_MB = 20;
 const ACCEPT = "image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif";
 
 type Stage = "compose" | "uploading" | "evaluating" | "done" | "error";

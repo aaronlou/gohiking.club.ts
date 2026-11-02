@@ -27,8 +27,12 @@ export function EvaluationResult({
     <div className={`result-panel ${accepted ? "is-accepted" : "is-rejected"}`}>
       <div className="result-panel__media">
         <img
-          src={photo.imageUrl}
-          srcSet={`${photo.thumbUrl} 720w, ${photo.imageUrl} 2200w`}
+          src={photo.previewUrl}
+          srcSet={
+            photo.previewUrl !== photo.thumbUrl
+              ? `${photo.thumbUrl} 720w, ${photo.previewUrl} 1280w`
+              : undefined
+          }
           sizes="(max-width: 760px) 92vw, 42vw"
           alt={photo.title}
         />

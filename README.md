@@ -22,7 +22,7 @@
 | 样式 | **Tailwind CSS 4 + 自建设计系统** | 纸张、墨绿、信号橙；Instrument Serif + 宋体；杂志式排版 |
 | 数据库 | **PostgreSQL 16 + Drizzle ORM 0.45** | 类型安全 schema、SQL 迁移、事务、关系建模 |
 | 认证 | **Better Auth 1.7 + Drizzle adapter** | 邮箱密码、会话 Cookie、用户名/简介扩展字段 |
-| 图像处理 | **Sharp + exifr** | 自动旋转、2200px WebP、720px 缩略图、LQIP、EXIF/GPS 提取 |
+| 图像处理 | **Sharp + exifr** | 自动旋转、原图尺寸 WebP（按需）、1280px 预览、720px 缩略图、LQIP、EXIF/GPS 提取 |
 | 多模态观看 | **Ollama / Qwen3.5 视觉模型** 或任意 **OpenAI-compatible** 视觉端点 | 结构化 JSON 输出、截图/非现场硬性筛查、温和的中文反馈 |
 | 测试 | **Vitest 5** | 评分归一化、筛查规则、档案分组、工具函数 |
 | 部署 | **Docker Multi-stage + Compose + GitHub Actions/GHCR** | Next standalone、Postgres、持久化媒体卷、自动迁移、健康检查 |
@@ -165,8 +165,8 @@ pnpm db:studio
 
 ## 真实 AI 观看链路
 
-1. 浏览器上传原图到 `/api/photos`，文件先进入只给拍摄者看的暂存区。
-2. Sharp 校验尺寸、自动旋转，生成 2200px display / 720px thumb / 24px blur，并保留原图宽高比。
+1. 浏览器上传原图到 `/api/photos`，单张上限 **20MB**，文件先进入只给拍摄者看的暂存区。
+2. Sharp 校验尺寸、自动旋转，生成原图尺寸 full / 1280px preview / 720px thumb / 24px blur；网页默认只使用 preview 与 thumb，原图只在点击“查看原图”后请求。
 3. `exifr` 提取拍摄时间、器材、光圈、快门、ISO 与 GPS。GPS 只保存在数据库，不向公开页面暴露。
 4. 客户端调用 `/api/photos/[id]/evaluate`。
 5. 服务端把 1280px JPEG + 标题/主题/地点交给视觉模型，要求严格 JSON：
@@ -202,7 +202,8 @@ pnpm db:studio
 - [x] **移动端底部 App 式导航**：山野 / 档案 / 放进 / 我的
 - [x] **移动端双列影像流**：首图与中场大幅图交错，减少滚动长度
 - [x] 表单控件 16px，避免 iOS 聚焦自动放大；触控目标 ≥ 44–50px
-- [x] PWA manifest、Apple touch icon、安全区适配、图片 `srcSet`
+- [x] PWA manifest、Apple touch icon、安全区适配、响应式预览图与按需原图
+- [x] 单张图片 20MB 上限，客户端与服务端双重校验
 - [x] ICP 备案号展示：浙ICP备2024126456号-4（链接工信部备案系统）
 - [x] 404 / 错误页、robots、sitemap、健康检查
 - [x] Docker / Compose / 迁移 / 媒体持久化 / 健康检查
@@ -218,7 +219,7 @@ pnpm db:studio
 - 首页影像改为双列节奏：第一张与第四张全宽，其余两张并列；整页高度从约 10,000px 降到约 6,800px。
 - 所有输入框在手机上是 16px，避免 iOS Safari 聚焦时缩放页面。
 - 主题选择改为两列，上传流程更短；触控目标至少 40–50px。
-- 图片提供 `srcSet`，手机加载 720px 缩略图，桌面按需加载 2200px 大图。
+- 列表只加载 720px 缩略图，详情先加载 1280px 预览；点击“查看原图”后才请求原始尺寸。原图尺寸的 WebP 只在灯箱中加载，不进入首屏网络请求。
 - 底部安全区 `env(safe-area-inset-bottom)`、PWA manifest 与 Apple 图标已配置。
 - 存档筛选、主题横向浏览、相关照片与页脚都做了触控与滚动适配。
 - 已用 390×844 的真实移动视口逐页验证，无横向溢出。
@@ -287,7 +288,7 @@ gohiking.club {
     encode zstd gzip
 
     request_body {
-        max_size 35MB
+        max_size 25MB
     }
 
     tls /etc/caddy/ssl/gohiking.club.pem /etc/caddy/ssl/gohiking.club.key

@@ -11,7 +11,8 @@ export const ACCEPTED_MIME_TYPES = new Set([
   "image/heif",
 ]);
 
-export const MAX_UPLOAD_BYTES = Number(process.env.UPLOAD_MAX_MB ?? 30) * 1024 * 1024;
+export const MAX_UPLOAD_MB = Number(process.env.UPLOAD_MAX_MB ?? 20);
+export const MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024;
 
 export type PhotoExif = {
   takenAt: Date | null;
@@ -28,7 +29,8 @@ export type PhotoExif = {
 export type PreparedPhoto = {
   width: number;
   height: number;
-  displayKey: string;
+  fullKey: string;
+  previewKey: string;
   thumbKey: string;
   blurData: string;
   dominantColor: string;
@@ -121,6 +123,15 @@ export async function extractExif(buffer: Buffer): Promise<PhotoExif> {
   }
 }
 
+/**
+ * Produces three delivery sizes:
+ * - full: native pixel dimensions, metadata stripped, only fetched on demand
+ * - preview: 1280px, used by detail/hero surfaces
+ * - thumb: 720px, used by gallery cards and studio
+ *
+ * Native pixels are never used for page loads. The browser sees full only after
+ * the reader explicitly asks for the original.
+ */
 export async function preparePhoto(
   buffer: Buffer,
   photoId: string,
@@ -130,54 +141,55 @@ export async function preparePhoto(
   const metadata = await image.metadata();
 
   if (!metadata.width || !metadata.height) {
-    throw new Error("这张图片没有读取成功，换一张试试吧。")
+    throw new Error("这张图片没有读取成功，换一张试试吧。");
   }
   if (metadata.width < 600 || metadata.height < 400) {
-    throw new Error("这张图有点小。长边至少需要 1200px，换一张原图试试吧。")
+    throw new Error("这张图有点小。长边至少需要 600px，短边至少需要 400px，换一张原图试试吧。");
   }
 
-  const base = image.clone().resize({
-    width: 2200,
-    height: 2200,
-    fit: "inside",
-    withoutEnlargement: true,
-  });
-
-  const displayBuffer = await base
+  const fullBuffer = await image
     .clone()
-    .webp({ quality: 84, effort: 4, smartSubsample: true })
+    .webp({ quality: 82, effort: 4, smartSubsample: true })
     .toBuffer({ resolveWithObject: true });
 
-  const thumbBuffer = await base
+  const previewBuffer = await image
     .clone()
-    .resize({ width: 720, height: 720, fit: "inside" })
-    .webp({ quality: 78, effort: 4 })
+    .resize({ width: 1280, height: 1280, fit: "inside", withoutEnlargement: true })
+    .webp({ quality: 76, effort: 4 })
     .toBuffer();
 
-  const blurBuffer = await base
+  const thumbBuffer = await image
+    .clone()
+    .resize({ width: 720, height: 720, fit: "inside", withoutEnlargement: true })
+    .webp({ quality: 74, effort: 4 })
+    .toBuffer();
+
+  const blurBuffer = await image
     .clone()
     .resize({ width: 24, height: 24, fit: "inside" })
     .webp({ quality: 35 })
     .toBuffer();
 
-  const modelBuffer = await base
+  const modelBuffer = await image
     .clone()
-    .resize({ width: 1280, height: 1280, fit: "inside" })
+    .resize({ width: 1280, height: 1280, fit: "inside", withoutEnlargement: true })
     .jpeg({ quality: 86, mozjpeg: true })
     .toBuffer();
 
-  const stats = await base.clone().stats();
+  const stats = await sharp(previewBuffer).stats();
   const dominant = stats.dominant;
   const dominantColor = `#${[dominant.r, dominant.g, dominant.b]
     .map((channel) => channel.toString(16).padStart(2, "0"))
     .join("")}`;
 
-  const displayKey = photoMediaKey(scope, photoId, "display");
+  const fullKey = photoMediaKey(scope, photoId, "full");
+  const previewKey = photoMediaKey(scope, photoId, "preview");
   const thumbKey = photoMediaKey(scope, photoId, "thumb");
   const blurKey = photoMediaKey(scope, photoId, "blur");
 
   await Promise.all([
-    writeMedia(displayKey, displayBuffer.data),
+    writeMedia(fullKey, fullBuffer.data),
+    writeMedia(previewKey, previewBuffer),
     writeMedia(thumbKey, thumbBuffer),
     writeMedia(blurKey, blurBuffer),
   ]);
@@ -185,9 +197,10 @@ export async function preparePhoto(
   const exif = await extractExif(buffer);
 
   return {
-    width: displayBuffer.info.width,
-    height: displayBuffer.info.height,
-    displayKey,
+    width: fullBuffer.info.width,
+    height: fullBuffer.info.height,
+    fullKey,
+    previewKey,
     thumbKey,
     blurData: `data:image/webp;base64,${blurBuffer.toString("base64")}`,
     dominantColor,

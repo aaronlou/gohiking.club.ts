@@ -43,7 +43,7 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-gohiking}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/${POSTGRES_DB:-gohiking}
       MEDIA_ROOT: /data/media
       REJECTED_RETENTION_HOURS: ${REJECTED_RETENTION_HOURS:-24}
-      UPLOAD_MAX_MB: ${UPLOAD_MAX_MB:-30}
+      UPLOAD_MAX_MB: ${UPLOAD_MAX_MB:-20}
       UPLOADS_PER_HOUR: ${UPLOADS_PER_HOUR:-12}
       AI_PROVIDER: ${AI_PROVIDER:-openai}
       AI_BASE_URL: ${AI_BASE_URL:-https://api.deepseek.com}

@@ -140,6 +140,7 @@ export const photos = pgTable(
     width: integer("width").notNull(),
     height: integer("height").notNull(),
     fileKey: text("file_key"),
+    previewKey: text("preview_key"),
     thumbKey: text("thumb_key"),
     blurData: text("blur_data"),
     dominantColor: text("dominant_color"),

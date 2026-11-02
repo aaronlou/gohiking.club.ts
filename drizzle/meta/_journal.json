@@ -15,6 +15,13 @@
       "when": 1793573592823,
       "tag": "0001_dashing_turbo",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793579089903,
+      "tag": "0002_daily_iron_monger",
+      "breakpoints": true
     }
   ]
 }

@@ -40,6 +40,8 @@ function photo(overrides: Partial<PhotoDto>): PhotoDto {
     acceptedAt: "2026-09-10T12:00:00.000Z",
     expiresAt: null,
     imageUrl: "/image",
+    previewUrl: "/preview",
+    fullUrl: "/full",
     thumbUrl: "/thumb",
     author:
       overrides.author ??
