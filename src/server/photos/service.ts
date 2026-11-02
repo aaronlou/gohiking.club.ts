@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { and, eq, isNull, lt, sql } from "drizzle-orm";
 import { getTheme } from "@/lib/constants";
 import type { PhotoUploadInput } from "@/lib/validation";
+import { getMembership, isApprovedMembership } from "@/server/activities/access";
 import { evaluatePhoto } from "@/server/ai/evaluator";
 import { db } from "@/server/db";
 import { likes, photos, user } from "@/server/db/schema";
@@ -325,13 +326,33 @@ export async function retryFailedPhoto(photoId: string, userId: string) {
 
 export async function togglePhotoLike(photoId: string, userId: string) {
   const [photo] = await db
-    .select({ id: photos.id, visibility: photos.visibility, status: photos.status })
+    .select({
+      id: photos.id,
+      userId: photos.userId,
+      activityId: photos.activityId,
+      visibility: photos.visibility,
+      status: photos.status,
+    })
     .from(photos)
     .where(eq(photos.id, photoId))
     .limit(1);
 
-  if (!photo || photo.status !== "accepted" || photo.visibility !== "public") {
-    throw new PhotoServiceError(404, "not_found", "没有找到这张公开照片");
+  if (
+    !photo ||
+    photo.status !== "accepted" ||
+    !photo.activityId ||
+    (photo.visibility !== "activity" && photo.visibility !== "public")
+  ) {
+    throw new PhotoServiceError(404, "not_found", "没有找到这张活动照片");
+  }
+
+  if (photo.userId === userId) {
+    throw new PhotoServiceError(403, "own_photo", "这是你自己的照片，把敬意留给同行的人吧。");
+  }
+
+  const membership = await getMembership(photo.activityId, userId);
+  if (!isApprovedMembership(membership)) {
+    throw new PhotoServiceError(403, "not_member", "只有这次活动的同行者，才能留下敬意。");
   }
 
   return db.transaction(async (tx) => {

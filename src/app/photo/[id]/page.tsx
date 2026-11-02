@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { PublishPhotoButton } from "@/components/activities/publish-photo-button";
 import { DeletePhotoButton } from "@/components/delete-photo-button";
-import { ArrowUpRight, LockIcon, QuoteMark } from "@/components/icons";
+import { ArrowUpRight, HeartIcon, LockIcon, QuoteMark } from "@/components/icons";
 import { LikeButton } from "@/components/like-button";
 import { PhotoCard } from "@/components/photo-card";
 import { PhotoViewer } from "@/components/photo-viewer";
@@ -16,6 +16,7 @@ import {
   profileHref,
   scoreVerdict,
 } from "@/lib/utils";
+import { getMembership, isApprovedMembership } from "@/server/activities/access";
 import { getCurrentUser } from "@/server/auth-session";
 import { getArchiveData, getPhotoById } from "@/server/photos/queries";
 
@@ -50,6 +51,17 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
   const related = relatedPhotos(photo, archive, 3);
   const theme = getTheme(photo.theme);
   const isOwner = viewer?.id === photo.author.id;
+  const membership =
+    photo.activityId && viewer
+      ? await getMembership(photo.activityId, viewer.id)
+      : null;
+  const isActivityMember = isApprovedMembership(membership);
+  const canLike = Boolean(
+    photo.activityId &&
+      photo.status === "accepted" &&
+      isActivityMember &&
+      !isOwner,
+  );
   const isRejected = photo.status === "rejected";
   const isPending = photo.status === "evaluating" || photo.status === "failed";
   const isPrivate = photo.visibility === "private";
@@ -250,13 +262,27 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
               <ArrowUpRight />
             </Link>
 
-            {isPublic && (
+            {canLike ? (
               <LikeButton
                 photoId={photo.id}
                 initialLiked={Boolean(photo.liked)}
                 initialCount={photo.likeCount}
               />
-            )}
+            ) : photo.activityId && photo.status === "accepted" ? (
+              <div className="like-note">
+                <HeartIcon filled={Boolean(photo.liked)} />
+                <div>
+                  <strong>{photo.likeCount} 次敬意</strong>
+                  <span>
+                    {isOwner
+                      ? "同行者可以给这张照片留下敬意。"
+                      : viewer
+                        ? "只有这次活动的同行者，才能留下敬意。"
+                        : "登录并加入这次活动后，才能留下敬意。"}
+                  </span>
+                </div>
+              </div>
+            ) : null}
 
             <div className="photo-meta">
               <div>

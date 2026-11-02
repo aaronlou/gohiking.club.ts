@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight } from "./icons";
 import { ContourMark } from "./logo";
+import { ShareButton } from "./share-button";
 
 export function SiteFooter() {
   return (
@@ -24,6 +25,7 @@ export function SiteFooter() {
             去看看公共档案
             <ArrowUpRight />
           </Link>
+          <ShareButton variant="footer" label="分享给朋友" />
         </div>
       </div>
 

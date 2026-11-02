@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { cn, initials } from "@/lib/utils";
 import { ArrowUpRight, CloseIcon, MenuIcon, UploadIcon } from "./icons";
 import { ContourMark, Wordmark } from "./logo";
+import { ShareButton } from "./share-button";
 
 type HeaderUser = {
   name: string;
@@ -72,6 +73,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
           </nav>
 
           <div className="site-header__actions">
+            <ShareButton variant="header" label="分享" />
             <Link href={uploadHref} className="btn btn--ink btn--sm header-upload">
               <UploadIcon />
               <span>放进照片</span>
@@ -120,6 +122,11 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
           ))}
         </nav>
         <div className="mobile-menu__foot">
+          <ShareButton
+            variant="menu"
+            label="分享山行档案"
+            tabIndex={open ? 0 : -1}
+          />
           {user ? (
             <Link href="/studio" tabIndex={open ? 0 : -1} className="btn btn--paper">
               进入我的档案

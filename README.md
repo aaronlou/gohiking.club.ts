@@ -60,7 +60,7 @@ drizzle/               已生成的 SQL 迁移
 - `activities`：一次同行的基本信息（标题、日期、地区、路线、集合点、加入方式、可见性、强度与名额）。`meeting_point` 只对成员返回。
 - `activity_members`：成员关系。`role` 为 `host | member`，`status` 为 `pending | approved | rejected | left | removed`；成员资格是相册访问的唯一依据。
 - `photos`：核心聚合。新上传必须带有 `activity_id`；状态机为 `evaluating → accepted | rejected | failed`，包含评分、结构化观看手记、EXIF、可见性、媒体键与活动归属。`activity_id` 允许为空只是为了兼容历史数据和活动删除兜底。
-- `likes`：用户与照片的复合主键，事务内维护 `likeCount`。
+- `likes`：用户与照片的复合主键，事务内维护 `likeCount`。只有照片所属活动的已通过成员可以点赞，且不能给自己的照片点赞。
 - 文件状态流转：上传后先进入 `quarantine/` 并立即观看。达到 3 分后文件移动到长期 `photos/`，以 `activity` 可见性进入活动相册；没到 3 分的照片在返回手记与建议后立即删除文件与记录。
 
 ---
@@ -255,7 +255,8 @@ pnpm db:studio
 - [x] 摄影师公开档案 `/hikers/[username]`
 - [x] 个人工作室：统计、状态筛选、继续观看、温暖的手记
 - [x] 公开 / 仅自己可见
-- [x] 点赞（登录后）
+- [x] 活动内互相点赞：仅同活动已通过成员，不能赞自己
+- [x] 分享产品/活动：系统分享面板、微信内右上角引导、复制链接、OG 分享图
 - [x] **移动端底部 App 式导航**：山野 / 活动 / 放进 / 档案 / 我的
 - [x] **移动端双列影像流**：首图与中场大幅图交错，减少滚动长度
 - [x] 表单控件 16px，避免 iOS 聚焦自动放大；触控目标 ≥ 44–50px

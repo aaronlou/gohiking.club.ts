@@ -11886,3 +11886,359 @@ body:has(.studio-page) .site-footer {
     font-size: 9.5px;
   }
 }
+
+/* ──────────────────────────────────────────────────────────────────────────
+   SHARE / SEND THE TRAIL ON
+   ────────────────────────────────────────────────────────────────────────── */
+
+.share-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.share-trigger svg {
+  width: 15px;
+  height: 15px;
+}
+
+.share-trigger--header {
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  color: var(--ink-mute);
+  transition:
+    border-color 0.25s var(--ease),
+    color 0.25s var(--ease);
+}
+
+.share-trigger--header:hover {
+  border-color: var(--ink-mute);
+  color: var(--ink);
+}
+
+.share-trigger--menu {
+  width: 100%;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-top: 1px solid rgba(243, 238, 227, 0.18);
+  border-bottom: 1px solid rgba(243, 238, 227, 0.18);
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  color: var(--paper);
+}
+
+.share-trigger--menu svg {
+  width: 18px;
+  height: 18px;
+}
+
+.activity-hero__share {
+  margin-top: 10px;
+}
+
+.activity-hero__share .share-trigger {
+  width: 100%;
+}
+
+.like-note {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-top: 18px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  color: var(--ink-mute);
+}
+
+.like-note > svg {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 auto;
+  color: var(--signal);
+}
+
+.like-note > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.like-note strong {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  color: var(--ink);
+}
+
+.like-note span {
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.activity-photo__link {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.activity-photo__likes {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 7px;
+  background: rgba(12, 17, 12, 0.55);
+  color: var(--paper);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  line-height: 1;
+  backdrop-filter: blur(6px);
+}
+
+.activity-photo__likes svg {
+  width: 12px;
+  height: 12px;
+}
+
+.like-button--compact {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  display: inline-flex;
+  width: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 5px 7px;
+  gap: 4px;
+  border: 0;
+  background: rgba(12, 17, 12, 0.55);
+  color: var(--paper);
+  font-size: 0;
+  line-height: 1;
+  backdrop-filter: blur(6px);
+}
+
+.like-button--compact span {
+  display: none;
+}
+
+.like-button--compact strong {
+  margin-left: 0;
+  color: inherit;
+  font-size: 9px;
+  line-height: 1;
+}
+
+.like-button--compact svg {
+  width: 13px;
+  height: 13px;
+}
+
+.like-button--compact:hover,
+.like-button--compact.is-liked {
+  border: 0;
+  background: var(--signal);
+  color: var(--paper);
+}
+
+body.share-open {
+  overflow: hidden;
+}
+
+.share-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(12, 17, 12, 0.58);
+  backdrop-filter: blur(8px);
+}
+
+.share-dialog {
+  width: min(520px, 100%);
+  color: var(--ink);
+  max-height: min(86dvh, 760px);
+  overflow-y: auto;
+  padding: 22px 24px 24px;
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
+  box-shadow: 0 30px 80px rgba(12, 17, 12, 0.25);
+}
+
+.share-dialog__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+  font-size: 8px;
+  letter-spacing: 0.06em;
+  color: var(--ink-mute);
+}
+
+.share-dialog__close {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+
+.share-dialog__close svg {
+  width: 14px;
+  height: 14px;
+}
+
+.share-dialog h2 {
+  margin-top: 22px;
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 5vw, 2.9rem);
+  font-weight: 400;
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+}
+
+.share-dialog h2 em {
+  color: var(--signal);
+}
+
+.share-dialog__lead {
+  margin-top: 13px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--ink-mute);
+}
+
+.share-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(135deg, rgba(223, 90, 52, 0.05), transparent 55%),
+    var(--paper-deep);
+}
+
+.share-card__brand {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.share-card__brand small {
+  margin-top: 5px;
+  font-family: var(--font-mono);
+  font-size: 7px;
+  letter-spacing: 0.12em;
+  color: var(--ink-mute);
+}
+
+.share-card__url {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  line-height: 1.5;
+  color: var(--ink-mute);
+  word-break: break-all;
+}
+
+.share-dialog__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.share-dialog__hint {
+  margin-top: 12px;
+  font-size: 10.5px;
+  line-height: 1.6;
+  color: var(--ink-mute);
+}
+
+.share-wechat {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid rgba(223, 90, 52, 0.28);
+  background: rgba(223, 90, 52, 0.05);
+}
+
+.share-wechat strong {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: var(--signal-deep);
+}
+
+.share-wechat p {
+  margin-top: 6px;
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--ink-mute);
+}
+
+.share-wechat b {
+  color: var(--ink);
+  font-weight: 400;
+}
+
+.share-dialog__problem {
+  margin-top: 10px;
+  font-size: 10.5px;
+  line-height: 1.6;
+  color: var(--danger);
+}
+
+@media (max-width: 1180px) {
+  .share-trigger--header {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .share-overlay {
+    align-items: end;
+    padding: 0;
+  }
+
+  .share-dialog {
+    width: 100%;
+    max-height: 88dvh;
+    padding: 18px 18px calc(22px + env(safe-area-inset-bottom));
+    border-left: 0;
+    border-right: 0;
+    border-bottom: 0;
+  }
+
+  .share-dialog h2 {
+    font-size: 2rem;
+  }
+
+  .like-button--compact {
+    min-height: 0;
+    padding: 6px 7px;
+  }
+
+  .like-note {
+    padding: 11px 12px;
+  }
+}

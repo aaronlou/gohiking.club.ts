@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { ActivityAlbum } from "@/components/activities/activity-album";
 import { ActivityCover } from "@/components/activities/activity-cover";
 import { JoinActivityButton } from "@/components/activities/join-activity-button";
+import { ShareButton } from "@/components/share-button";
 import { ArrowUpRight, LockIcon } from "@/components/icons";
 import {
   activityPhase,
@@ -30,6 +31,21 @@ export async function generateMetadata({
     description:
       data.activity.summary ??
       `${formatActivityRange(data.activity.startDate, data.activity.endDate)} · 一次同行的山野影像相册。`,
+    openGraph: {
+      title: `${data.activity.title} · 山行档案`,
+      description:
+        data.activity.summary ??
+        `${formatActivityRange(data.activity.startDate, data.activity.endDate)} · 一次同行的山野影像相册。`,
+      type: "article",
+      images: [
+        {
+          url: "/og-share.jpg",
+          width: 1200,
+          height: 630,
+          alt: `${data.activity.title} · 山行档案`,
+        },
+      ],
+    },
     robots:
       data.activity.visibility === "listed" ? undefined : { index: false, follow: false },
   };
@@ -104,6 +120,18 @@ export default async function ActivityPage({ params }: { params: Promise<{ slug:
               isLoggedIn={Boolean(viewer)}
             />
 
+            {activity.visibility !== "private" && (
+              <div className="activity-hero__share">
+                <ShareButton
+                  variant="inline"
+                  url={`/activities/${activity.slug}`}
+                  title={`${activity.title} · 山行档案`}
+                  text={`${formatActivityRange(activity.startDate, activity.endDate)}${activity.region ? ` · ${activity.region}` : ""}。这次同行的相册，等你一起看。`}
+                  label="分享这次活动"
+                />
+              </div>
+            )}
+
             {isHost && (activity.pendingCount ?? 0) > 0 && (
               <Link href={`/activities/${activity.slug}/manage`} className="activity-hero__pending">
                 {activity.pendingCount} 份申请等你确认
@@ -143,7 +171,12 @@ export default async function ActivityPage({ params }: { params: Promise<{ slug:
             </div>
 
             {isMember ? (
-              <ActivityAlbum photos={photos} slug={activity.slug} />
+              <ActivityAlbum
+            photos={photos}
+            slug={activity.slug}
+            viewerId={viewer?.id ?? null}
+            isMember={isMember}
+          />
             ) : (
               <div className="activity-locked">
                 <span className="activity-locked__icon">

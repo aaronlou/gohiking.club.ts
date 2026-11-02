@@ -28,11 +28,20 @@ export const metadata: Metadata = {
     type: "website",
     locale: "zh_CN",
     siteName: "山行档案",
+    images: [
+      {
+        url: "/og-share.jpg",
+        width: 1200,
+        height: 630,
+        alt: "山行档案 · 把走过的山野，好好收起来",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "山行档案 · 把走过的山野，好好收起来",
     description: SITE.description,
+    images: ["/og-share.jpg"],
   },
   icons: {
     icon: "/icon.svg",

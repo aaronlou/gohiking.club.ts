@@ -1,10 +1,21 @@
 import Link from "next/link";
-import { ArrowUpRight } from "@/components/icons";
+import { ArrowUpRight, HeartIcon } from "@/components/icons";
+import { LikeButton } from "@/components/like-button";
 import { groupActivityPhotosByDay } from "@/lib/activities";
 import { formatShortDate } from "@/lib/utils";
 import type { PhotoDto } from "@/server/photos/dto";
 
-export function ActivityAlbum({ photos, slug }: { photos: PhotoDto[]; slug: string }) {
+export function ActivityAlbum({
+  photos,
+  slug,
+  viewerId,
+  isMember,
+}: {
+  photos: PhotoDto[];
+  slug: string;
+  viewerId: string | null;
+  isMember: boolean;
+}) {
   if (photos.length === 0) {
     return (
       <div className="activity-album-empty">
@@ -31,28 +42,42 @@ export function ActivityAlbum({ photos, slug }: { photos: PhotoDto[]; slug: stri
           </div>
           <div className="activity-album__grid">
             {group.photos.map((photo) => (
-              <Link
-                key={photo.id}
-                href={`/photo/${photo.id}`}
-                className="activity-photo"
-                aria-label={`查看 ${photo.author.name} 的「${photo.title}」`}
-              >
-                <img
-                  src={photo.thumbUrl}
-                  alt={photo.title}
-                  loading="lazy"
-                  decoding="async"
-                  width={photo.width}
-                  height={photo.height}
-                />
-                {photo.visibility === "public" && (
-                  <span className="activity-photo__public">已公开</span>
-                )}
-                <span className="activity-photo__meta">
-                  <span>{photo.author.name}</span>
-                  <span>{formatShortDate(photo.takenAt)}</span>
-                </span>
-              </Link>
+              <div className="activity-photo" key={photo.id}>
+                <Link
+                  href={`/photo/${photo.id}`}
+                  className="activity-photo__link"
+                  aria-label={`查看 ${photo.author.name} 的「${photo.title}」`}
+                >
+                  <img
+                    src={photo.thumbUrl}
+                    alt={photo.title}
+                    loading="lazy"
+                    decoding="async"
+                    width={photo.width}
+                    height={photo.height}
+                  />
+                  {photo.visibility === "public" && (
+                    <span className="activity-photo__public">已公开</span>
+                  )}
+                  <span className="activity-photo__meta">
+                    <span>{photo.author.name}</span>
+                    <span>{formatShortDate(photo.takenAt)}</span>
+                  </span>
+                </Link>
+                {isMember && photo.author.id !== viewerId ? (
+                  <LikeButton
+                    photoId={photo.id}
+                    initialLiked={Boolean(photo.liked)}
+                    initialCount={photo.likeCount}
+                    compact
+                  />
+                ) : photo.likeCount > 0 ? (
+                  <span className="activity-photo__likes">
+                    <HeartIcon filled={Boolean(photo.liked)} />
+                    {photo.likeCount}
+                  </span>
+                ) : null}
+              </div>
             ))}
           </div>
         </section>
