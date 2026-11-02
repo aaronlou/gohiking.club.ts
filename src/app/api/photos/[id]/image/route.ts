@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { canViewPhotoRecord, isPublicPhoto } from "@/server/activities/access";
 import { getSessionFromRequest } from "@/server/auth-session";
+import { verifyPhotoGrant } from "@/server/media/signed-url";
 import { readMedia } from "@/server/media/storage";
 import { getPhotoRecord } from "@/server/photos/service";
 
@@ -21,11 +22,22 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   }
 
   const isPublic = isPublicPhoto(photo);
-  const session = isPublic ? null : await getSessionFromRequest(request);
-  const viewerId = session?.user.id ?? null;
+  let viewerId: string | null = null;
 
-  if (!(await canViewPhotoRecord(photo, viewerId))) {
-    return new NextResponse("Not found", { status: 404 });
+  if (!isPublic) {
+    // Two supported paths: a short-lived, photo-bound grant for mini-program
+    // image tags, or the normal same-origin session cookie for the web.
+    const grant = verifyPhotoGrant(photo.id, request);
+    if (grant) {
+      viewerId = grant.viewerId;
+    } else {
+      const session = await getSessionFromRequest(request);
+      viewerId = session?.user.id ?? null;
+    }
+
+    if (!(await canViewPhotoRecord(photo, viewerId))) {
+      return new NextResponse("Not found", { status: 404 });
+    }
   }
 
   const requested = new URL(request.url).searchParams.get("variant");

@@ -60,6 +60,7 @@ drizzle/               已生成的 SQL 迁移
 - `activities`：一次同行的基本信息（标题、日期、地区、路线、集合点、加入方式、可见性、强度与名额）。`meeting_point` 只对成员返回。
 - `activity_members`：成员关系。`role` 为 `host | member`，`status` 为 `pending | approved | rejected | left | removed`；成员资格是相册访问的唯一依据。
 - `photos`：核心聚合。新上传必须带有 `activity_id`；状态机为 `evaluating → accepted | rejected | failed`，包含评分、结构化观看手记、EXIF、可见性、媒体键与活动归属。`activity_id` 允许为空只是为了兼容历史数据和活动删除兜底。
+- 私有照片的跨端访问使用 **30 分钟、绑定 photoId + viewerId 的 HMAC 签名 URL**，不把 Better Auth session token 放进图片地址。签名密钥为 `MEDIA_URL_SECRET`（未设置时回退到 `BETTER_AUTH_SECRET`）。
 - `likes`：用户与照片的复合主键，事务内维护 `likeCount`。只有照片所属活动的已通过成员可以点赞，且不能给自己的照片点赞。
 - 文件状态流转：上传后先进入 `quarantine/` 并立即观看。达到 3 分后文件移动到长期 `photos/`，以 `activity` 可见性进入活动相册；没到 3 分的照片在返回手记与建议后立即删除文件与记录。
 

@@ -33,6 +33,7 @@ services:
       APP_URL: ${APP_URL:-http://localhost:3000}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET in .env}
+      MEDIA_URL_SECRET: ${MEDIA_URL_SECRET:-}
       AUTH_SECURE_COOKIES: ${AUTH_SECURE_COOKIES:-false}
       DATABASE_URL: postgresql://gohiking:${POSTGRES_PASSWORD:-gohiking}@db:5432/gohiking
       MEDIA_ROOT: /data/media
@@ -64,6 +65,7 @@ services:
       APP_URL: ${APP_URL:-http://localhost:3000}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET in .env}
+      MEDIA_URL_SECRET: ${MEDIA_URL_SECRET:-}
       DATABASE_URL: postgresql://gohiking:${POSTGRES_PASSWORD:-gohiking}@db:5432/gohiking
       MEDIA_ROOT: /data/media
     volumes:
