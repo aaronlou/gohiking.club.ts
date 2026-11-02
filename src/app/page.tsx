@@ -50,7 +50,11 @@ export default async function HomePage() {
     return (
       <section className="empty-home shell">
         <p className="eyebrow">GOHIKING.CLUB</p>
-        <h1>山行档案，正在等第一张山野。</h1>
+        <h1>
+          山行档案，
+          <br />
+          正在等第一张山野。
+        </h1>
         <p>不急着拍得完美。先把那一次出发带回来，我们会认真看。</p>
         <Link href={uploadHref} className="btn btn--ink">
           放进第一张照片
