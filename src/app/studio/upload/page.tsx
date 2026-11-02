@@ -42,7 +42,7 @@ export default async function StudioUploadPage({
             <p className="studio-head__note">
               {activity
                 ? `放进《${activity.title}》。照片只对同行者可见，不会自动公开，也不用等待观看。`
-                : "挑一张你愿意再看的照片，写下一点当时的风。我们会认真看，然后在 10–40 秒里给你一份属于这张照片的手记。"}
+                : "挑一张，或者一次放进最多 9 张。写下一点当时的风，我们会逐张认真看，并给每一张留下手记。"}
             </p>
           </div>
           <div className="submit-rule">

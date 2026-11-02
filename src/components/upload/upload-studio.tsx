@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import type { PhotoDto } from "@/server/photos/dto";
 import { ArrowRight, CloseIcon, EyeIcon, LockIcon, SpinnerIcon, UploadIcon } from "@/components/icons";
 import { useToast } from "@/components/toast";
+import { BatchUpload } from "./batch-upload";
 import { EvaluationResult } from "./evaluation-result";
 
 const MAX_MB = 20;
@@ -45,6 +46,7 @@ export function UploadStudio({ activity = null }: { activity?: ActivityContext }
   const [locationName, setLocationName] = useState("");
   const [takenAt, setTakenAt] = useState("");
   const [visibility, setVisibility] = useState<"public" | "private">("public");
+  const [mode, setMode] = useState<"single" | "batch">("single");
   const [stage, setStage] = useState<Stage>("compose");
   const [progress, setProgress] = useState(0);
   const [photoId, setPhotoId] = useState<string | null>(null);
@@ -356,6 +358,33 @@ export function UploadStudio({ activity = null }: { activity?: ActivityContext }
   }
 
   return (
+    <>
+      <div className="upload-mode-switch" role="tablist" aria-label="上传方式">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mode === "single"}
+          className={mode === "single" ? "is-active" : ""}
+          onClick={() => setMode("single")}
+        >
+          单张
+          <small>ONE</small>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mode === "batch"}
+          className={mode === "batch" ? "is-active" : ""}
+          onClick={() => setMode("batch")}
+        >
+          批量 · 最多 9 张
+          <small>UP TO 9</small>
+        </button>
+      </div>
+
+      {mode === "batch" ? (
+        <BatchUpload activity={activity} />
+      ) : (
     <form className="upload-layout" onSubmit={submit}>
       <section className="upload-compose">
         {activity && (
@@ -571,5 +600,7 @@ export function UploadStudio({ activity = null }: { activity?: ActivityContext }
         </div>
       </section>
     </form>
+      )}
+    </>
   );
 }

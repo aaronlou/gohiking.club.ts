@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     return errorResponse(`这张照片超过了 ${MAX_UPLOAD_MB}MB，压缩一下再试试吧。`, "too_large", 413);
   }
 
-  const limit = Number(process.env.UPLOADS_PER_HOUR ?? 12);
+  const limit = Number(process.env.UPLOADS_PER_HOUR ?? 30);
   const recent = await countRecentUploads(user.id, 1);
   if (recent >= limit) {
     return errorResponse(
