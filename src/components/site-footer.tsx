@@ -38,6 +38,7 @@ export function SiteFooter() {
         </div>
         <div className="site-footer__col">
           <span className="footer-label">EXPLORE / 浏览</span>
+          <Link href="/activities">活动</Link>
           <Link href="/archive">影像档案</Link>
           <Link href="/archive?view=author">摄影师</Link>
           <Link href="/archive?view=date">时间线</Link>
@@ -46,6 +47,7 @@ export function SiteFooter() {
         <div className="site-footer__col">
           <span className="footer-label">STUDIO / 工作室</span>
           <Link href="/studio">我的档案</Link>
+          <Link href="/studio/activities">我的活动</Link>
           <Link href="/studio/upload">放进一张照片</Link>
           <Link href="/#standard">我们如何观看</Link>
         </div>

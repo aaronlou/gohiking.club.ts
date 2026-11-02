@@ -2,13 +2,17 @@ import { StudioAccount } from "@/components/studio/studio-account";
 import { StudioNav } from "@/components/studio/studio-nav";
 import { initials } from "@/lib/utils";
 import { requireUser } from "@/server/auth-session";
+import { getHostPendingRequests } from "@/server/activities/queries";
 import { getStudioStats } from "@/server/photos/queries";
 
 export const dynamic = "force-dynamic";
 
 export default async function StudioLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser("/studio");
-  const stats = await getStudioStats(user.id);
+  const [stats, requests] = await Promise.all([
+    getStudioStats(user.id),
+    getHostPendingRequests(user.id),
+  ]);
 
   return (
     <div className="studio-page">
@@ -26,7 +30,7 @@ export default async function StudioLayout({ children }: { children: React.React
             </div>
           </div>
 
-          <StudioNav rejectedCount={stats.rejected} />
+          <StudioNav rejectedCount={stats.rejected} pendingRequests={requests.length} />
 
           <div className="studio-sidebar__card">
             <span className="mono">FIELD NOTE</span>

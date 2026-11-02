@@ -13,6 +13,7 @@ type HeaderUser = {
 } | null;
 
 const navItems = [
+  { href: "/activities", label: "活动", latin: "WALKS" },
   { href: "/archive", label: "影像档案", latin: "ARCHIVE" },
   { href: "/#this-week", label: "本期山脊", latin: "SELECTS" },
   { href: "/#standard", label: "如何观看", latin: "HOW WE LOOK" },
@@ -61,7 +62,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
                 href={item.href}
                 className={cn(
                   "site-nav__link",
-                  pathname === item.href && "is-active",
+                  (pathname === item.href || pathname.startsWith(`${item.href}/`)) && "is-active",
                 )}
               >
                 <span>{item.label}</span>

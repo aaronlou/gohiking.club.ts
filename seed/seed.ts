@@ -1,10 +1,10 @@
 import { randomBytes } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { auth } from "../src/server/auth";
 import { db } from "../src/server/db";
-import { photos, user as users } from "../src/server/db/schema";
+import { activities, activityMembers, photos, user as users } from "../src/server/db/schema";
 import { preparePhoto } from "../src/server/media/process";
 import { deletePhotoDirectory } from "../src/server/media/storage";
 import { DEMO_PASSWORD, seedPhotos, seedUsers } from "./data";
@@ -154,6 +154,165 @@ async function main() {
     console.log(
       `  photo ${String(index + 1).padStart(2, "0")} ${seedPhoto.asset.padEnd(20)} ${seedPhoto.status}`,
     );
+  }
+
+  type SeedActivity = {
+    id: string;
+    slug: string;
+    host: string;
+    title: string;
+    summary: string;
+    description: string;
+    region: string;
+    routeName: string;
+    meetingPoint: string;
+    startDate: string;
+    endDate: string;
+    difficulty: string;
+    joinPolicy: "approval" | "open" | "invite";
+    visibility: "listed" | "unlisted" | "private";
+    photoIds: string[];
+    members: string[];
+  };
+
+  const seedActivities: SeedActivity[] = [
+    {
+      id: "b1000000-0000-4000-8000-000000000001",
+      slug: "siguniang-changpinggou-2026",
+      host: "linshen",
+      title: "四姑娘山 · 长坪沟两日",
+      summary: "走到木骡子，在雪山脚下住一晚，第二天原路回来。",
+      description:
+        "第一天从长坪沟口进山，走到木骡子扎营；第二天看完日照金山再慢慢下撤。\n集合点只在这里显示，请同行的人提前确认装备和补给。",
+      region: "四川 · 小金",
+      routeName: "长坪沟 — 木骡子",
+      meetingPoint: "成都东站西广场，07:00 出发",
+      startDate: "2026-09-20",
+      endDate: "2026-09-21",
+      difficulty: "moderate",
+      joinPolicy: "approval",
+      visibility: "listed",
+      photoIds: [
+        "a1000000-0000-4000-8000-000000000002",
+        "a1000000-0000-4000-8000-000000000005",
+        "a1000000-0000-4000-8000-000000000009",
+      ],
+      members: ["linshen", "alan", "mira"],
+    },
+    {
+      id: "b1000000-0000-4000-8000-000000000002",
+      slug: "coast-mountains-fog",
+      host: "mira",
+      title: "海岸山脉 · 雾林清晨",
+      summary: "趁雾还没散，沿旧伐木道走进冷杉林。",
+      description: "一条轻松的清晨线路，来回约四小时。适合第一次一起走的人。",
+      region: "BC · Squamish",
+      routeName: "Old Logging Road",
+      meetingPoint: "Trailhead 停车场，06:30",
+      startDate: "2026-10-18",
+      endDate: "2026-10-18",
+      difficulty: "easy",
+      joinPolicy: "approval",
+      visibility: "listed",
+      photoIds: [
+        "a1000000-0000-4000-8000-000000000008",
+        "a1000000-0000-4000-8000-000000000015",
+      ],
+      members: ["mira", "linshen"],
+    },
+    {
+      id: "b1000000-0000-4000-8000-000000000003",
+      slug: "xishan-night-2026",
+      host: "zhouye",
+      title: "西山夜爬 · 等一场银河",
+      summary: "傍晚出发，山顶等银河升起，凌晨下撤。",
+      description: "带头灯和保暖层。山顶风大，记得多带一件。",
+      region: "云南 · 昆明",
+      routeName: "西山 — 猫猫箐",
+      meetingPoint: "西山公园地铁站 A 口，19:30",
+      startDate: "2026-11-08",
+      endDate: "2026-11-09",
+      difficulty: "moderate",
+      joinPolicy: "approval",
+      visibility: "listed",
+      photoIds: [],
+      members: ["zhouye", "laobai"],
+    },
+  ];
+
+  for (const seedActivity of seedActivities) {
+    const hostId = userIds.get(seedActivity.host);
+    if (!hostId) throw new Error(`Unknown host ${seedActivity.host}`);
+
+    await db
+      .insert(activities)
+      .values({
+        id: seedActivity.id,
+        slug: seedActivity.slug,
+        hostId,
+        title: seedActivity.title,
+        summary: seedActivity.summary,
+        description: seedActivity.description,
+        region: seedActivity.region,
+        routeName: seedActivity.routeName,
+        meetingPoint: seedActivity.meetingPoint,
+        startDate: seedActivity.startDate,
+        endDate: seedActivity.endDate,
+        difficulty: seedActivity.difficulty,
+        joinPolicy: seedActivity.joinPolicy,
+        visibility: seedActivity.visibility,
+        status: "open",
+      })
+      .onConflictDoUpdate({
+        target: activities.id,
+        set: {
+          slug: seedActivity.slug,
+          hostId,
+          title: seedActivity.title,
+          summary: seedActivity.summary,
+          description: seedActivity.description,
+          region: seedActivity.region,
+          routeName: seedActivity.routeName,
+          meetingPoint: seedActivity.meetingPoint,
+          startDate: seedActivity.startDate,
+          endDate: seedActivity.endDate,
+          difficulty: seedActivity.difficulty,
+          joinPolicy: seedActivity.joinPolicy,
+          visibility: seedActivity.visibility,
+          status: "open",
+        },
+      });
+
+    for (const username of seedActivity.members) {
+      const memberId = userIds.get(username);
+      if (!memberId) continue;
+      await db
+        .insert(activityMembers)
+        .values({
+          activityId: seedActivity.id,
+          userId: memberId,
+          role: memberId === hostId ? "host" : "member",
+          status: "approved",
+          decidedAt: new Date(),
+          decidedBy: hostId,
+        })
+        .onConflictDoUpdate({
+          target: [activityMembers.activityId, activityMembers.userId],
+          set: {
+            role: memberId === hostId ? "host" : "member",
+            status: "approved",
+          },
+        });
+    }
+
+    if (seedActivity.photoIds.length > 0) {
+      await db
+        .update(photos)
+        .set({ activityId: seedActivity.id, visibility: "activity" })
+        .where(inArray(photos.id, seedActivity.photoIds));
+    }
+
+    console.log(`  activity ${seedActivity.title} · ${seedActivity.members.length} members`);
   }
 
   const counts = await db.select({ id: photos.id }).from(photos);

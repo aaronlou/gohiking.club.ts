@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { PublishPhotoButton } from "@/components/activities/publish-photo-button";
 import { DeletePhotoButton } from "@/components/delete-photo-button";
 import { ArrowUpRight, LockIcon, QuoteMark } from "@/components/icons";
 import { LikeButton } from "@/components/like-button";
@@ -53,6 +54,10 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
   const isRejected = photo.status === "rejected";
   const isPending = photo.status === "evaluating" || photo.status === "failed";
   const isPrivate = photo.visibility === "private";
+  const isPublic = photo.status === "accepted" && photo.visibility === "public";
+  const isActivityOnly = photo.visibility === "activity";
+  const hasNote = photo.score !== null;
+  const canSeeNote = (isPublic || isOwner) && hasNote;
   const score = photo.score ?? 0;
 
   return (
@@ -100,6 +105,11 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
             <LockIcon /> 仅自己可见
           </span>
         )}
+        {isActivityOnly && photo.activity && (
+          <Link href={`/activities/${photo.activity.slug}`} className="private-mark private-mark--activity">
+            <LockIcon /> 仅活动同行可见
+          </Link>
+        )}
       </div>
 
       <div className="photo-page__layout shell">
@@ -114,6 +124,12 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
             <p>
               {photo.caption || "这张照片没有留下文字，但画面已经把当时的风说了一些。"}
             </p>
+            {photo.activity && (
+              <Link href={`/activities/${photo.activity.slug}`} className="photo-activity-link">
+                来自活动《{photo.activity.title}》
+                <ArrowUpRight />
+              </Link>
+            )}
             {photo.creditName && (
               <a
                 href={photo.creditUrl ?? "#"}
@@ -130,6 +146,7 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
 
         <aside className="photo-page__panel">
           <div className="photo-page__panel-inner">
+            {canSeeNote && (
             <div className="photo-score">
               <div className="photo-score__top">
                 <span className="eyebrow">
@@ -154,6 +171,7 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
                 <span>5.0</span>
               </div>
             </div>
+            )}
 
             <h1>{photo.title}</h1>
             <div className="photo-page__themes">
@@ -169,10 +187,30 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
               ))}
             </div>
 
-            <div className="photo-quote">
-              <QuoteMark />
-              <p>{photo.summary}</p>
-            </div>
+            {!canSeeNote && (
+              <div className="photo-activity-note">
+                <span className="mono">SHARED IN A FIELD ROLL</span>
+                <p>
+                  {isOwner
+                    ? "这张照片还没有请山野看过。想公开到山野档案时，再点下面的按钮；在那之前，它只留在这次活动里。"
+                    : "这张照片来自一次同行。观看手记与分数只对拍摄者本人可见；想公开到山野档案，也由拍摄者自己决定。"}
+                </p>
+              </div>
+            )}
+
+            {canSeeNote && (
+              <div className="photo-quote">
+                <QuoteMark />
+                <p>{photo.summary}</p>
+              </div>
+            )}
+
+            {isOwner && photo.activityId && (
+              <PublishPhotoButton
+                photoId={photo.id}
+                published={photo.visibility === "public"}
+              />
+            )}
 
             <Link href={profileHref(photo.author.username)} className="photo-author">
               <span className="avatar">{initials(photo.author.name)}</span>
@@ -186,7 +224,7 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
               <ArrowUpRight />
             </Link>
 
-            {!isRejected && !isPending && (
+            {isPublic && (
               <LikeButton
                 photoId={photo.id}
                 initialLiked={Boolean(photo.liked)}
@@ -245,6 +283,7 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
         </aside>
       </div>
 
+      {canSeeNote && (
       <section className="judgement shell">
         <div className="judgement__head">
           <span className="eyebrow">
@@ -327,6 +366,7 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
           </div>
         </div>
       </section>
+      )}
 
       <section className="photo-related shell">
         <div className="photo-related__head">

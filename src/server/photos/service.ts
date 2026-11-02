@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, eq, lt, sql } from "drizzle-orm";
+import { and, eq, isNull, lt, sql } from "drizzle-orm";
 import { getTheme } from "@/lib/constants";
 import type { PhotoUploadInput } from "@/lib/validation";
 import { evaluatePhoto } from "@/server/ai/evaluator";
@@ -38,8 +38,9 @@ export async function createPhoto(input: {
   userId: string;
   fileBuffer: Buffer;
   fields: PhotoUploadInput;
+  activityId?: string | null;
 }) {
-  const { userId, fileBuffer, fields } = input;
+  const { userId, fileBuffer, fields, activityId } = input;
   const photoId = randomUUID();
 
   let prepared;
@@ -58,11 +59,12 @@ export async function createPhoto(input: {
       .values({
         id: photoId,
         userId,
-        title: fields.title,
+        title: fields.title?.trim() || "未命名山野",
         caption: fields.caption || null,
+        activityId: activityId ?? null,
         theme: fields.theme,
-        visibility: fields.visibility,
-        status: "evaluating",
+        visibility: activityId ? "activity" : fields.visibility,
+        status: activityId ? "unrated" : "evaluating",
         takenAt,
         locationName: fields.locationName || null,
         latitude: prepared.exif.latitude,
@@ -113,7 +115,11 @@ async function loadPhotoForEvaluation(photoId: string, userId: string) {
   return row;
 }
 
-export async function evaluateAndFinalize(photoId: string, userId: string): Promise<{
+export async function evaluateAndFinalize(
+  photoId: string,
+  userId: string,
+  options: { publish?: boolean } = {},
+): Promise<{
   photo: PhotoDto;
   accepted: boolean;
   latencyMs: number;
@@ -125,8 +131,18 @@ export async function evaluateAndFinalize(photoId: string, userId: string): Prom
   const { photo, author } = await loadPhotoForEvaluation(photoId, userId);
 
   if (photo.status === "accepted") {
+    if (options.publish && photo.visibility !== "public") {
+      const [published] = await db
+        .update(photos)
+        .set({ visibility: "public" })
+        .where(eq(photos.id, photoId))
+        .returning();
+      if (published) {
+        return { photo: toPhotoDto(published, author), accepted: true, latencyMs: 0 };
+      }
+    }
     return {
-      photo: toPhotoDto(photo, author),
+      photo: toPhotoDto(photo, author, { activity: null }),
       accepted: true,
       latencyMs: 0,
     };
@@ -204,6 +220,7 @@ export async function evaluateAndFinalize(photoId: string, userId: string): Prom
           .set({
             ...common,
             status: "accepted",
+            visibility: options.publish ? "public" : photo.visibility,
             acceptedAt: now,
             expiresAt: null,
             fileKey: fullKey,
@@ -222,9 +239,13 @@ export async function evaluateAndFinalize(photoId: string, userId: string): Prom
       await deleteMedia([photoMediaKey("quarantine", photoId, "blur")]);
       await deletePhotoDirectory("quarantine", photoId).catch(() => undefined);
     } else {
-      const expiresAt = new Date(
-        now.getTime() + Number(process.env.REJECTED_RETENTION_HOURS ?? 24) * 3_600_000,
-      );
+      // Photos kept inside an activity must never expire: the album is the
+      // member's own record of the trip, not a 24-hour holding pen.
+      const expiresAt = photo.activityId
+        ? null
+        : new Date(
+            now.getTime() + Number(process.env.REJECTED_RETENTION_HOURS ?? 24) * 3_600_000,
+          );
       [updated] = await db
         .update(photos)
         .set({
@@ -336,7 +357,13 @@ export async function cleanupExpiredMedia() {
   const expired = await db
     .select({ id: photos.id })
     .from(photos)
-    .where(and(eq(photos.status, "rejected"), lt(photos.expiresAt, now)))
+    .where(
+      and(
+        eq(photos.status, "rejected"),
+        isNull(photos.activityId),
+        lt(photos.expiresAt, now),
+      ),
+    )
     .limit(50);
 
   for (const photo of expired) {
@@ -349,7 +376,13 @@ export async function cleanupExpiredMedia() {
   const staleFailed = await db
     .select({ id: photos.id })
     .from(photos)
-    .where(and(eq(photos.status, "failed"), lt(photos.createdAt, staleFailedCutoff)))
+    .where(
+      and(
+        eq(photos.status, "failed"),
+        isNull(photos.activityId),
+        lt(photos.createdAt, staleFailedCutoff),
+      ),
+    )
     .limit(20);
 
   for (const photo of staleFailed) {

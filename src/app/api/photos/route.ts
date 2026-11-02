@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { canUploadToActivity } from "@/server/activities/access";
 import { photoUploadSchema } from "@/lib/validation";
 import { requireApiUser } from "@/server/auth-session";
 import { ACCEPTED_MIME_TYPES, MAX_UPLOAD_BYTES, MAX_UPLOAD_MB } from "@/server/media/process";
@@ -80,12 +81,23 @@ export async function POST(request: Request) {
     );
   }
 
+  const activityId = formData.get("activityId");
+  if (activityId) {
+    if (typeof activityId !== "string" || !/^[0-9a-f-]{36}$/i.test(activityId)) {
+      return errorResponse("没有找到这次活动。", "invalid_activity", 400);
+    }
+    if (!(await canUploadToActivity(activityId, user.id))) {
+      return errorResponse("加入这次活动之后，才能把照片放进去。", "not_member", 403);
+    }
+  }
+
   try {
     const buffer = Buffer.from(await file.arrayBuffer());
     const photo = await createPhoto({
       userId: user.id,
       fileBuffer: buffer,
       fields: parsed.data,
+      activityId: typeof activityId === "string" ? activityId : null,
     });
 
     const dto = await getPhotoById(photo.id, user.id);

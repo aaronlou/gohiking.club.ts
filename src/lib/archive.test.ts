@@ -9,6 +9,8 @@ function photo(overrides: Partial<PhotoDto>): PhotoDto {
     caption: null,
     status: "accepted",
     visibility: "public",
+    activityId: null,
+    activity: null,
     theme: overrides.theme ?? "ridge",
     aiTheme: overrides.theme ?? "ridge",
     aiProvider: "editorial",

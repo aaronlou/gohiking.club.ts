@@ -14,6 +14,8 @@ export type PhotoDto = {
   caption: string | null;
   status: Photo["status"];
   visibility: Photo["visibility"];
+  activityId: string | null;
+  activity: { id: string; slug: string; title: string } | null;
   theme: string;
   aiTheme: string | null;
   aiProvider: string | null;
@@ -76,7 +78,10 @@ export function toAuthor(user: {
 export function toPhotoDto(
   photo: Photo,
   author: Pick<User, "id" | "name" | "username" | "homeBase" | "bio">,
-  options: { liked?: boolean } = {},
+  options: {
+    liked?: boolean;
+    activity?: { id: string; slug: string; title: string } | null;
+  } = {},
 ): PhotoDto {
   const version = photo.evaluatedAt
     ? new Date(photo.evaluatedAt).getTime().toString(36)
@@ -88,6 +93,8 @@ export function toPhotoDto(
     caption: photo.caption,
     status: photo.status,
     visibility: photo.visibility,
+    activityId: photo.activityId,
+    activity: options.activity ?? null,
     theme: photo.theme,
     aiTheme: photo.aiTheme,
     aiProvider: photo.aiProvider,

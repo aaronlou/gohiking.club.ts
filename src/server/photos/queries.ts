@@ -1,6 +1,7 @@
-import { and, avg, count, countDistinct, desc, eq, gte, inArray, lt, sql } from "drizzle-orm";
+import { and, avg, count, countDistinct, desc, eq, gte, inArray, isNull, lt, sql } from "drizzle-orm";
 import { db } from "@/server/db";
-import { likes, photos, user } from "@/server/db/schema";
+import { activities, likes, photos, user } from "@/server/db/schema";
+import { canViewPhotoRecord } from "@/server/activities/access";
 import { toPhotoDto, type PhotoDto } from "./dto";
 
 const authorColumns = {
@@ -103,23 +104,25 @@ export async function getPublicStats() {
 
 export async function getPhotoById(id: string, viewerId: Viewer): Promise<PhotoDto | null> {
   const [row] = await db
-    .select({ photo: photos, author: user })
+    .select({ photo: photos, author: user, activity: activities })
     .from(photos)
     .innerJoin(user, eq(photos.userId, user.id))
+    .leftJoin(activities, eq(photos.activityId, activities.id))
     .where(eq(photos.id, id))
     .limit(1);
 
   if (!row) return null;
-
-  const isOwner = viewerId === row.photo.userId;
-  const isPublic = row.photo.status === "accepted" && row.photo.visibility === "public";
-
-  if (!isPublic && !isOwner) {
-    return null;
-  }
+  if (!(await canViewPhotoRecord(row.photo, viewerId))) return null;
 
   const [dto] = await attachLikes([row], viewerId);
-  return dto ?? null;
+  if (!dto) return null;
+
+  return {
+    ...dto,
+    activity: row.activity
+      ? { id: row.activity.id, slug: row.activity.slug, title: row.activity.title }
+      : null,
+  };
 }
 
 export async function getPhotosByUsername(username: string, viewerId?: Viewer) {
@@ -191,7 +194,13 @@ export async function getStudioStats(userId: string) {
     db
       .select({ total: count() })
       .from(photos)
-      .where(and(eq(photos.userId, userId), eq(photos.status, "rejected"))),
+      .where(
+        and(
+          eq(photos.userId, userId),
+          eq(photos.status, "rejected"),
+          isNull(photos.activityId),
+        ),
+      ),
     db
       .select({ total: count() })
       .from(photos)

@@ -79,6 +79,8 @@ export function StudioArchive({ photos }: { photos: PhotoDto[] }) {
           {filtered.map((photo) => {
             const isRejected = photo.status === "rejected";
             const isPending = photo.status === "evaluating" || photo.status === "failed";
+            const isUnrated = photo.status === "unrated";
+            const inActivity = Boolean(photo.activityId);
             const theme = getTheme(photo.theme);
             return (
               <article className={`studio-photo status-${photo.status}`} key={photo.id}>
@@ -86,14 +88,22 @@ export function StudioArchive({ photos }: { photos: PhotoDto[] }) {
                   <img src={photo.thumbUrl} alt={photo.title} loading="lazy" />
                   <span className="studio-photo__status">
                     {photo.status === "accepted"
-                      ? "已收录"
+                      ? photo.visibility === "public"
+                        ? "已收录"
+                        : "活动内"
+                      : isUnrated
+                        ? "活动内"
                       : photo.status === "rejected"
-                        ? "暂存"
+                        ? inActivity
+                          ? "未公开"
+                          : "暂存"
                         : photo.status === "failed"
                           ? "观看中断"
                           : "观看中"}
                   </span>
-                  {isRejected && <span className="studio-photo__timer">{countdownLabel(photo.expiresAt)}移除</span>}
+                  {isRejected && !inActivity && (
+                    <span className="studio-photo__timer">{countdownLabel(photo.expiresAt)}移除</span>
+                  )}
                 </Link>
                 <div className="studio-photo__info">
                   <div className="studio-photo__meta">
@@ -108,9 +118,15 @@ export function StudioArchive({ photos }: { photos: PhotoDto[] }) {
                   <p>
                     {photo.status === "accepted"
                       ? photo.summary?.slice(0, 62)
+                      : isUnrated
+                        ? "已经放进活动相册，还没有请山野观看。"
                       : photo.status === "rejected"
-                        ? "看看这次的手记，或提前删除。"
-                        : "我们还在看这张照片。"}
+                        ? inActivity
+                          ? "这张照片还在活动相册里，只有同行者能看到。"
+                          : "看看这次的手记，或提前删除。"
+                        : inActivity
+                          ? "已经放进活动相册，还没有请山野观看。"
+                          : "我们还在看这张照片。"}
                   </p>
                   <div className="studio-photo__actions">
                     {photo.status === "accepted" && (
@@ -135,6 +151,12 @@ export function StudioArchive({ photos }: { photos: PhotoDto[] }) {
                           className="studio-action studio-action--danger"
                         />
                       </>
+                    )}
+                    {isUnrated && (
+                      <Link href={`/photo/${photo.id}`} className="studio-action">
+                        查看档案
+                        <ArrowUpRight />
+                      </Link>
                     )}
                     {isPending && (
                       <RetryEvaluationButton

@@ -17,3 +17,6 @@ coverage
 
 .env.production
 .env.production.local
+
+.idea/
+*.log

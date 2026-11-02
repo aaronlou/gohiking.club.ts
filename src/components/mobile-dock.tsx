@@ -2,12 +2,57 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { GridIcon, MountainIcon, PeopleIcon, UploadIcon } from "./icons";
+import { useEffect } from "react";
+import { CompassIcon, GridIcon, MountainIcon, PeopleIcon, UploadIcon } from "./icons";
 
 type DockUser = { name: string; username: string } | null;
 
+/**
+ * iOS Safari anchors fixed elements to the layout viewport, which sits behind
+ * the browser's bottom toolbar. Measure the visual viewport and lift the dock
+ * by the toolbar height so it always rests on the visible bottom edge.
+ */
+function useDockLift() {
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+
+    const root = document.documentElement;
+    let frame = 0;
+
+    const measure = () => {
+      frame = 0;
+      const toolbar = Math.round(
+        window.innerHeight - viewport.height - viewport.offsetTop,
+      );
+      const lift = toolbar > 24 ? Math.min(toolbar, 96) : 0;
+      root.style.setProperty("--dock-lift", `${lift}px`);
+    };
+
+    const schedule = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(measure);
+    };
+
+    measure();
+    viewport.addEventListener("resize", schedule);
+    viewport.addEventListener("scroll", schedule);
+    window.addEventListener("orientationchange", schedule);
+
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      viewport.removeEventListener("resize", schedule);
+      viewport.removeEventListener("scroll", schedule);
+      window.removeEventListener("orientationchange", schedule);
+      root.style.removeProperty("--dock-lift");
+    };
+  }, []);
+}
+
 export function MobileDock({ user }: { user: DockUser }) {
   const pathname = usePathname();
+  useDockLift();
+
   if (
     pathname === "/login" ||
     pathname === "/register" ||
@@ -31,10 +76,10 @@ export function MobileDock({ user }: { user: DockUser }) {
       primary: false,
     },
     {
-      href: "/archive",
-      label: "档案",
-      icon: GridIcon,
-      active: pathname.startsWith("/archive"),
+      href: "/activities",
+      label: "活动",
+      icon: CompassIcon,
+      active: pathname.startsWith("/activities"),
       primary: false,
     },
     {
@@ -43,6 +88,13 @@ export function MobileDock({ user }: { user: DockUser }) {
       icon: UploadIcon,
       active: pathname.startsWith("/studio/upload"),
       primary: true,
+    },
+    {
+      href: "/archive",
+      label: "档案",
+      icon: GridIcon,
+      active: pathname.startsWith("/archive"),
+      primary: false,
     },
     {
       href: user ? "/studio" : `/login?next=${encodeURIComponent(loginNext)}`,

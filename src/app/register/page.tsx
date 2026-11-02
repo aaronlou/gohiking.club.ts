@@ -33,7 +33,7 @@ export default async function RegisterPage({
           一个<em>长久的位置。</em>
         </>
       }
-      note="创建一个属于你的山野影像档案。每一张放进来的照片，都会得到一次认真、温柔的观看，以及一份具体的中文手记。"
+      note="只需要一个邮箱和密码。称呼、常走的山和一句介绍，可以之后在工作室里慢慢补。"
       image={image}
     >
       <RegisterForm next={destination} />

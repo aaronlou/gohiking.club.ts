@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { canViewPhotoRecord, isPublicPhoto } from "@/server/activities/access";
 import { getSessionFromRequest } from "@/server/auth-session";
 import { readMedia } from "@/server/media/storage";
 import { getPhotoRecord } from "@/server/photos/service";
@@ -19,15 +20,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     return new NextResponse("Not found", { status: 404 });
   }
 
-  const isPublic = photo.status === "accepted" && photo.visibility === "public";
-  let isOwner = false;
+  const isPublic = isPublicPhoto(photo);
+  const session = isPublic ? null : await getSessionFromRequest(request);
+  const viewerId = session?.user.id ?? null;
 
-  if (!isPublic) {
-    const session = await getSessionFromRequest(request);
-    isOwner = session?.user.id === photo.userId;
-  }
-
-  if (!isPublic && !isOwner) {
+  if (!(await canViewPhotoRecord(photo, viewerId))) {
     return new NextResponse("Not found", { status: 404 });
   }
 
