@@ -23,8 +23,8 @@ services:
         max-file: "3"
 
   app:
-    image: ${APP_IMAGE:-ghcr.io/aaronlou/gohiking-club.ts:latest}
-    pull_policy: always
+    image: ${APP_IMAGE:-ghcr.io/aaronlou/gohiking.club.ts:latest}
+    pull_policy: missing
     restart: unless-stopped
     init: true
     depends_on:
@@ -68,8 +68,8 @@ services:
   # One-off initial content. `SEED_RANDOM_PASSWORDS=true` prevents known demo logins.
   seed:
     profiles: ["seed"]
-    image: ${SEED_IMAGE:-ghcr.io/aaronlou/gohiking-club.ts:seed-latest}
-    pull_policy: always
+    image: ${SEED_IMAGE:-ghcr.io/aaronlou/gohiking.club.ts:seed-latest}
+    pull_policy: missing
     depends_on:
       db:
         condition: service_healthy

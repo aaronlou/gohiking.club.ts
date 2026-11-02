@@ -3,6 +3,11 @@ name: Build and publish Docker image
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
+      - "docker-compose.prod.yml"
+      - ".env.production.example"
   workflow_dispatch:
 
 concurrency:

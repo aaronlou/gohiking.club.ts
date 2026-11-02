@@ -1,0 +1,24 @@
+# Production site block for gohiking.club.
+# Append to /etc/caddy/Caddyfile, then:
+#   caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+#   systemctl reload caddy
+#
+# The existing certificate is a DigiCert certificate valid for
+# gohiking.club and www.gohiking.club until 2027-01-24.
+
+gohiking.club {
+    encode zstd gzip
+
+    request_body {
+        max_size 35MB
+    }
+
+    tls /etc/caddy/ssl/gohiking.club.pem /etc/caddy/ssl/gohiking.club.key
+
+    header {
+        Strict-Transport-Security "max-age=31536000"
+        -Server
+    }
+
+    reverse_proxy 127.0.0.1:3000
+}

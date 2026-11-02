@@ -2,6 +2,8 @@
 
 > 把走过的山野，好好收起来。
 
+**线上地址：** https://gohiking.club
+
 一个面向户外徒步群体的影像档案馆。注册用户放进照片后，由真实的多模态视觉模型从光影、构图、山野叙事与独特观看四个维度写下一份 1–5 分的中文观看手记。3.0 分以上的照片进入公共档案；还没到 3 分的照片不会被公开，也不会被否定，而是先回到只属于拍摄者的暂存区，保留 24 小时供阅读手记，然后自动移除。
 
 网站希望做到的不是“淘汰照片”，而是让每一张被带回来的照片，都得到一次认真、温和的看见。
@@ -23,7 +25,7 @@
 | 图像处理 | **Sharp + exifr** | 自动旋转、2200px WebP、720px 缩略图、LQIP、EXIF/GPS 提取 |
 | 多模态观看 | **Ollama / Qwen3.5 视觉模型** 或任意 **OpenAI-compatible** 视觉端点 | 结构化 JSON 输出、截图/非现场硬性筛查、温和的中文反馈 |
 | 测试 | **Vitest 5** | 评分归一化、筛查规则、档案分组、工具函数 |
-| 部署 | **Docker Multi-stage + Docker Compose** | Next standalone、Postgres、持久化媒体卷、自动迁移、健康检查 |
+| 部署 | **Docker Multi-stage + Compose + GitHub Actions/GHCR** | Next standalone、Postgres、持久化媒体卷、自动迁移、健康检查 |
 
 ### 代码结构
 
@@ -40,6 +42,8 @@ src/
     media/             Sharp 处理、本地媒体存储
     photos/            查询与领域服务
   lib/                 主题、校验、客户端上传 API
+.github/workflows/     GHCR 镜像构建与 seed 镜像发布
+deploy/                Caddy 生产站点片段
 seed/                  演示照片、演示用户与观看手记
 docker/                迁移与容器入口
 drizzle/               已生成的 SQL 迁移
@@ -199,6 +203,7 @@ pnpm db:studio
 - [x] **移动端双列影像流**：首图与中场大幅图交错，减少滚动长度
 - [x] 表单控件 16px，避免 iOS 聚焦自动放大；触控目标 ≥ 44–50px
 - [x] PWA manifest、Apple touch icon、安全区适配、图片 `srcSet`
+- [x] ICP 备案号展示：浙ICP备2024126456号-4（链接工信部备案系统）
 - [x] 404 / 错误页、robots、sitemap、健康检查
 - [x] Docker / Compose / 迁移 / 媒体持久化 / 健康检查
 - [x] 单元测试与完整桌面/移动端手工验证
@@ -222,55 +227,131 @@ pnpm db:studio
 
 ## Docker 生产部署
 
-### 1. 准备环境变量
+生产镜像由 GitHub Actions 构建并推送到 GHCR。推送 `main` 后会自动生成：
+
+- `ghcr.io/aaronlou/gohiking.club.ts:latest`
+- `ghcr.io/aaronlou/gohiking.club.ts:<commit-sha>`
+- `ghcr.io/aaronlou/gohiking.club.ts:seed-latest`（一次性随机密码 seed 镜像）
+
+流水线文件：[`.github/workflows/docker.yml`](.github/workflows/docker.yml)。
+
+### 1. 服务器准备
+
+服务器上只需要一个目录、Docker 和 Compose：
 
 ```bash
-cp .env.docker.example .env
+git clone https://github.com/aaronlou/gohiking.club.ts.git /home/admin/gohiking.club
+cd /home/admin/gohiking.club
+cp .env.production.example .env
 ```
 
-至少修改：
+编辑 `.env`，至少配置：
 
 ```dotenv
-APP_URL=https://your-domain.example
-BETTER_AUTH_URL=https://your-domain.example
-BETTER_AUTH_SECRET=<openssl rand -hex 32>
-AUTH_SECURE_COOKIES=true
 POSTGRES_PASSWORD=<strong-password>
-AI_PROVIDER=openai
-AI_API_KEY=<key>
-AI_MODEL=gpt-4.1-mini
+BETTER_AUTH_SECRET=<openssl rand -hex 32>
 CRON_SECRET=<random>
+DEEPSEEK_API_KEY=<vision-capable key>
+SHOW_DEMO_ACCOUNT=false
 ```
 
-### 2. 构建并启动
+生产 Compose 使用 `docker-compose.prod.yml`，只把应用绑定到 `127.0.0.1:3000`，由宿主 Caddy 接 HTTPS。
+
+### 2. 启动数据库与应用
 
 ```bash
-docker compose up -d --build
+docker compose -f docker-compose.prod.yml pull app
+docker compose -f docker-compose.prod.yml up -d
 ```
 
-App：`http://localhost:3000`（或 `APP_PORT`）。
-
-首次启动会自动执行 Drizzle 迁移。媒体存储在 `media` volume，数据库存储在 `pgdata` volume。
-
-### 3. 可选：写入演示内容
+首次启动会自动执行数据库迁移。健康检查：
 
 ```bash
-docker compose --profile seed run --rm seed
+curl -s http://127.0.0.1:3000/api/health
 ```
 
-### 4. 反向代理
+### 3. 可选：写入开放档案内容
 
-生产建议放在 Caddy / Nginx / Traefik 后并启用 HTTPS。使用 HTTPS 时设置 `AUTH_SECURE_COOKIES=true`，并确保 `APP_URL` 与 `BETTER_AUTH_URL` 都是最终域名。上传限制默认 30MB，请同步调整反向代理的 `client_max_body_size`。
+```bash
+docker compose -f docker-compose.prod.yml --profile seed run --rm seed
+```
 
-### 5. 运维
+生产 seed 使用 `SEED_RANDOM_PASSWORDS=true`，五位演示作者的密码是随机生成的，不会显示，也不会与本地演示密码相同。这样公开档案有初始内容，但不存在可被公开尝试的演示登录。登录页在生产环境会自动隐藏演示账号入口（`SHOW_DEMO_ACCOUNT=false`）。
+
+### 4. Caddy HTTPS
+
+在现有 Caddyfile 中新增独立站点，不替换其他站点：
+
+```caddyfile
+gohiking.club {
+    encode zstd gzip
+
+    request_body {
+        max_size 35MB
+    }
+
+    tls /etc/caddy/ssl/gohiking.club.pem /etc/caddy/ssl/gohiking.club.key
+
+    header {
+        Strict-Transport-Security "max-age=31536000"
+        -Server
+    }
+
+    reverse_proxy 127.0.0.1:3000
+}
+```
+
+仓库提供了 [`deploy/Caddyfile.gohiking`](deploy/Caddyfile.gohiking) 作为可直接追加的站点片段。这里复用已签发的 `gohiking.club` 证书（SAN 包含 `www.gohiking.club`），不触发新的 ACME 申请；证书到期时间为 2027-01-24。保存前先备份 Caddyfile，然后：
+
+```bash
+caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+systemctl reload caddy
+```
+
+验证：
+
+```bash
+curl -I https://gohiking.club
+curl -I http://gohiking.club
+```
+
+### 5. 备案号
+
+全站页脚展示：
+
+```text
+浙ICP备2024126456号-4
+```
+
+并链接至工信部备案系统 `https://beian.miit.gov.cn/`。该信息在桌面与移动端页脚均可见。
+
+### 6. AI 配置
+
+生产推荐使用支持图片输入的 OpenAI-compatible 模型。当前部署使用 DeepSeek 的 `deepseek-flash`：
+
+```dotenv
+AI_PROVIDER=openai
+AI_BASE_URL=https://api.deepseek.com
+AI_MODEL=deepseek-flash
+DEEPSEEK_API_KEY=...
+```
+
+本地没有云模型时仍可切回 Ollama：
+
+```dotenv
+AI_PROVIDER=ollama
+OLLAMA_URL=http://127.0.0.1:11434
+OLLAMA_MODEL=qwen3.5:9b
+```
+
+### 7. 运维
 
 - 健康检查：`GET /api/health`（数据库 + 媒体目录）
 - 手动清理：`POST /api/cron/cleanup`，Header `Authorization: Bearer $CRON_SECRET`
-- 备份：备份 `pgdata` 与 `media` 两个 volume
-- 生产更推荐 OpenAI-compatible 托管视觉端点；容器访问宿主机 Ollama 时，Compose 已配置 `host.docker.internal`
+- 备份：备份 `gohiking_pgdata` 与 `gohiking_media` volume
+- 更新：`docker compose -f docker-compose.prod.yml pull app && docker compose -f docker-compose.prod.yml up -d app`
 - 媒体为本地卷；多副本部署请替换为 S3/R2 存储驱动
-
----
+- 若 GHCR 包为私有，服务器需用具备 `read:packages` 的 GitHub token 执行一次 `docker login ghcr.io`
 
 ## 设计说明
 

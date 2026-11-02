@@ -14,3 +14,6 @@ coverage
 .gstack/
 
 .pnpm-store
+
+.env.production
+.env.production.local
